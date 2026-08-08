@@ -12,6 +12,7 @@ A structured generate → score → crossbreed → implement pipeline. The goal 
 - **Lightweight mode** (contained bug, single-file change, reversible decision): n=3, one round, inline adversarial scoring (steelman the case against each before scoring), skip subagents. Everything else below still applies.
 - **Full tournament** (architecture, cross-cutting change, high blast radius, previous fix failed, data-integrity stakes): n=5 default, subagent scoring, up to 3 rounds.
 - **Lightweight is the default.** Full mode must be justified by an explicit trigger (architecture, failed prior fix, high blast radius, user request). When genuinely unsure, ask — one sentence, not a ceremony.
+- **Downgrade mid-flight when the problem deflates.** If Phase 0 or Phase 1 reveals the problem is simpler than it looked (the "architecture question" is a one-file fix; the filler verdict guts the field), say so and drop to lightweight — or, below even that bar, exit the tournament entirely and just fix it, noting why. Ceremony that outlives its justification is pure overhead; the tournament selecting the obvious fix after five subagents is a failure of calibration, not a success of process.
 
 ## Phase 0: Lock the rubric BEFORE generating
 
@@ -25,8 +26,8 @@ This ordering is mandatory. Criteria chosen after seeing solutions become ration
    - Performance / cost — 15%
    - Implementation risk (blast radius, reversibility) — 10%
 3. **Rubric checkpoint:** present dimensions and weights to the user for approval or adjustment before generating (use AskUserQuestion when available). Weights encode the user's values, not Claude's. Skip only if the user has pre-authorized autonomous runs; then state the weights and proceed. Weights freeze after this point in the round.
-4. Define a **disqualification rule**: any solution that treats a symptom while leaving the root cause intact scores 0 overall regardless of other dimensions. Name what "the symptom" is for this problem so the rule is checkable.
-5. Check `docs/decisions/` (or the project's equivalent) for records of past tournaments touching this area; carry forward relevant constraints and rejected approaches.
+4. Define a **disqualification rule**: any solution that treats a symptom while leaving the root cause intact scores 0 overall regardless of other dimensions. Name what "the symptom" is for this problem so the rule is checkable. The root-cause claim must cite observable evidence (a reproduction, trace, log, or measurement); if it is a hypothesis rather than a verified diagnosis, label it HYPOTHESIS at the rubric checkpoint so the user is approving the diagnosis, not just the weights — a wrong symptom name makes this rule disqualify the wrong things with full confidence.
+5. Check `docs/decisions/` (or the project's equivalent) for records of past tournaments touching this area; carry forward relevant constraints and rejected approaches. Treat records as dated claims, not standing law: before carrying a rejection forward, verify the blocker that caused it still exists (the dependency still missing, the scale constraint still real). A stale rejection silently blocks a now-viable approach.
 
 ## Phase 1: Divergent generation (n solutions)
 
@@ -40,7 +41,8 @@ This ordering is mandatory. Criteria chosen after seeing solutions become ration
 Every candidate faces an adversarial skeptic BEFORE anonymized scoring — pressure applied to all candidates equally and early beats pressure applied only to the winner late.
 
 - **One batched skeptic call:** a single skeptic (fresh subagent in full mode; a clearly separated pass in lightweight mode) attacks ALL candidates in one pass — mechanism, assumptions, hidden costs — and produces critique → revision → premortem per candidate in that same call. Never one subagent per candidate; skeptic independence does not matter the way scorer independence does, because the skeptic is not ranking.
-- Each solution then gets **one revision pass** with a hard guard: the revision may strengthen the solution but may NOT change its named structural axis. If answering the critique requires changing the axis, the solution stands as-is and the critique travels with it — this prevents the skeptic from sanding all candidates into the same safe shape.
+- The skeptic may also issue a **filler verdict**: a candidate that is structurally distinct but not credible — no plausible path to winning any dimension, existing only to satisfy the diversity quota. Filler is DROPPED before scoring, not revised; scoring strawmen wastes tokens and a weak field flatters the winner. The verdict must name why the candidate cannot win, not merely rank it low. If dropping filler leaves fewer than 3 candidates, that is evidence the problem has one reasonable answer: say so, skip remaining ceremony, and take the leader to the red-team directly.
+- Each surviving solution then gets **one revision pass** with a hard guard: the revision may strengthen the solution but may NOT change its named structural axis. If answering the critique requires changing the axis, the solution stands as-is and the critique travels with it — this prevents the skeptic from sanding all candidates into the same safe shape.
 - Each revised solution ships with a **premortem** (≤80 words): "It is 12 months from now and this solution failed in production. What happened?" Surviving critiques fold into it. Premortems are visible to the scorers.
 
 ## Phase 2: Blind adversarial scoring
@@ -52,6 +54,7 @@ Self-scoring by the generator is unreliable — scores cluster at 7–8 and drif
 - **Lightweight mode:** score in a clearly separated pass, steelmanning the case AGAINST each solution before scoring it.
 - Apply the disqualification rule first, before any scoring.
 - Use **forced ranking within each dimension** (rank 1..n, no ties) plus a score; comparative judgment is more reliable than absolute scores.
+- **Every score must cite one concrete fact from the context pack** (a file excerpt, an interface, a scale number, a measured constraint) — not a plausibility judgment. A score that cannot name its fact is an opinion; flag it as such in the matrix. This is the working countermeasure to the scorers' shared priors: anonymization removes the generator's reasoning, but scorers are the same model family, so agreement between them is consensus, not evidence. Grounding in checkable facts is what distinguishes the two.
 - Compute weighted totals. Show the full matrix — never just the winner.
 
 ## Phase 3: Decision gate
@@ -59,6 +62,7 @@ Self-scoring by the generator is unreliable — scores cluster at 7–8 and drif
 - If the top solution wins by a clear margin (>10% weighted) AND survives the red-team below → implement it.
 - Otherwise → crossbreed round: take the top 2–3 and generate z new solutions (default z=3), each explicitly naming which traits it inherits from which parents ("B's storage model + D's retry semantics"). Add one **mutation**: perturb one assumption (a constraint relaxed or tightened) in one offspring. Re-run Phase 2 with the same rubric.
 - Maximum 3 rounds. If the top weighted score plateaus (<5% improvement round-over-round), stop and take the leader — further rounds are churn.
+- The 10% margin, 5% plateau, and 3-round cap are UNCALIBRATED defaults, not measured constants — treat them as tie-breaking conventions, not truths. When a result lands within ~2 points of a threshold, do not let the arithmetic silently decide: surface the near-miss to the user with the matrix ("B wins by 11%, but scorer 2 had them tied") and let judgment make the call the threshold was approximating. Logged token/outcome data from past tournaments (see Token discipline) is what eventually moves these numbers.
 
 ## Phase 4: Red-team before implementation
 
@@ -82,6 +86,8 @@ If the red-team finds a fatal flaw, the runner-up (already red-teamed if the rac
 ## Output format
 
 Every tournament ends with: the rubric with weights, the score matrix per round (compact table), the decision trail (who won, why, what was crossbred), red-team findings and mitigations, then the implementation. Never present only the winner without the matrix.
+
+Before presenting, one honesty check: the format guarantees the boxes are filled, not that filling them was thought. If any artifact was produced mechanically — a premortem that restates the critique, a score fact that is really a plausibility guess, a red-team pass that found nothing because it did not look — either redo it or label it as weak in the output. A labeled gap is recoverable; a confident blank is not.
 
 ## Token discipline
 

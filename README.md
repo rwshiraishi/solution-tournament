@@ -54,9 +54,9 @@ Default dimensions (adjustable per problem):
 
 The rubric goes to the user for approval before generation. Weights encode the user's values, not the assistant's. After approval, weights freeze for the round.
 
-Phase 0 also defines a **disqualification rule**: any solution that treats a symptom while leaving the root cause intact scores 0 overall, regardless of how well it does on every other dimension. The symptom is named explicitly so the rule is checkable, not vibes.
+Phase 0 also defines a **disqualification rule**: any solution that treats a symptom while leaving the root cause intact scores 0 overall, regardless of how well it does on every other dimension. The symptom is named explicitly so the rule is checkable, not vibes, and the root-cause claim must cite observable evidence (a reproduction, trace, or measurement). If the diagnosis is a hypothesis rather than verified, it is labeled HYPOTHESIS at the rubric checkpoint, so the user knows they are approving a diagnosis and not just weights.
 
-Finally, it checks `docs/decisions/` for records of past tournaments in the same area, so rejected approaches stay rejected and constraints carry forward.
+Finally, it checks `docs/decisions/` for records of past tournaments in the same area. Records are treated as dated claims: a past rejection is carried forward only after verifying its original blocker still exists, so a stale record cannot silently block a now-viable approach.
 
 ### Phase 1: Divergent generation
 
@@ -70,7 +70,7 @@ Each candidate gets a mechanism description (150 words max), its assumptions, an
 
 ### Phase 1.5: Skeptic pass
 
-Before scoring, a single adversarial skeptic attacks all candidates in one batched pass: mechanism, assumptions, hidden costs. Each candidate then gets one revision pass with a hard guard: the revision may strengthen the solution but may not change its structural axis. This prevents the skeptic from sanding every candidate into the same safe shape.
+Before scoring, a single adversarial skeptic attacks all candidates in one batched pass: mechanism, assumptions, hidden costs. The skeptic can also issue a **filler verdict**: a candidate that is structurally distinct but has no plausible path to winning any dimension is dropped before scoring rather than revised, because scoring strawmen wastes tokens and a weak field flatters the winner. If dropping filler guts the field, that is evidence the problem has one reasonable answer, and the tournament ends early. Each surviving candidate then gets one revision pass with a hard guard: the revision may strengthen the solution but may not change its structural axis. This prevents the skeptic from sanding every candidate into the same safe shape.
 
 Each revised solution ships with a **premortem** (80 words max): "It is 12 months from now and this solution failed in production. What happened?" Premortems travel with the candidates into scoring.
 
@@ -82,6 +82,7 @@ Self-scoring by the generator is unreliable. Scores cluster at 7 to 8 and drift 
 - For high-stakes rounds, two independent scorers run and results aggregate by median rank. Sharp disagreement between judges is surfaced to the user as signal, not smoothed over.
 - The disqualification rule applies first, before any scoring.
 - Scoring uses **forced ranking within each dimension** (rank 1 to n, no ties) alongside scores, because comparative judgment is more reliable than absolute scores.
+- **Every score must cite one concrete fact from the context pack**: a file excerpt, an interface, a scale number. A score that cannot name its fact is flagged as opinion in the matrix. This is the countermeasure to scorers sharing the generator's priors: facts are checkable, consensus is not.
 - The full weighted matrix is always shown. Never just the winner.
 
 ### Phase 3: Decision gate
@@ -91,6 +92,8 @@ If the top solution wins by a clear margin (over 10% weighted) and survives the 
 Otherwise, a **crossbreed round**: the top 2 or 3 candidates produce new offspring, each explicitly naming which traits it inherits from which parents ("B's storage model plus D's retry semantics"). One offspring gets a **mutation**: a single assumption perturbed. The same rubric scores the new field.
 
 Maximum 3 rounds. If the top score plateaus (under 5% improvement round over round), the leader wins. Further rounds are churn.
+
+The 10% margin, 5% plateau, and 3-round cap are uncalibrated defaults, and the skill says so: near-threshold results are surfaced to the user with the matrix rather than silently decided by the arithmetic.
 
 ### Phase 4: Red-team before implementation
 
@@ -143,7 +146,7 @@ Two independent dials control how heavy a tournament gets. **Stakes** set the mo
 | Spike gate | Not used | Available for close races on spikeable problems |
 | Rounds possible | Usually 1 | Up to 3 |
 
-Lightweight is the default. Full mode requires an explicit trigger, so a typo fix never gets ceremony and a schema migration never skips rigor. Every principle (locked rubric, structural diversity, premortems, disqualification rule, full matrix) applies in both modes. What changes is who does the work: in lightweight mode the main thread wears different hats in separated passes; in full mode, independent subagents wear them, which buys real blindness at the cost of tokens.
+Lightweight is the default. Full mode requires an explicit trigger, so a typo fix never gets ceremony and a schema migration never skips rigor. The mode can also drop mid-flight: if Phase 0 or 1 reveals the problem deflated, the tournament downgrades to lightweight or exits entirely, because ceremony that outlives its justification is pure overhead. Every principle (locked rubric, structural diversity, premortems, disqualification rule, full matrix) applies in both modes. What changes is who does the work: in lightweight mode the main thread wears different hats in separated passes; in full mode, independent subagents wear them, which buys real blindness at the cost of tokens.
 
 ### Dial 2: Score margin picks the round count (decided by the results)
 
@@ -234,14 +237,14 @@ The tournament is a bet that structure beats improvisation for consequential dec
 
 ### Cons
 
-- **It costs real tokens and real time.** A full tournament spawns a skeptic, one or two scorers, and one or two red-teamers, across up to three rounds. That is several times the cost of just implementing the obvious fix. When the obvious fix is actually right (often), the tournament is pure overhead that ends by selecting it anyway.
-- **The blindness is imperfect.** The scorer is a fresh context, but it is the same model family with the same priors. Anonymization removes the generator's stated reasoning, not shared blind spots. Two "independent" scorers can agree because they share training, not because they are right.
-- **The thresholds are invented, not measured.** The 10% decision margin, the 5% plateau, the 3-round cap, and the weight defaults are sensible-sounding numbers without empirical calibration behind them. The skill logs token spend per tournament so they can be tuned from data, but until that data accumulates, they are judgment dressed as arithmetic.
-- **Forced diversity can produce filler.** When a problem genuinely has one reasonable answer, the requirement for n structurally distinct candidates yields strawmen with premortems. The scoring usually disposes of them cheaply, but generating them still costs tokens, and a weak field can flatter the winner.
+- **It costs real tokens and real time.** A full tournament spawns a skeptic, one or two scorers, and one or two red-teamers, across up to three rounds. That is several times the cost of just implementing the obvious fix. When the obvious fix is actually right (often), the tournament is pure overhead that ends by selecting it anyway. Mitigation in the skill: a mid-flight downgrade rule. If Phase 0 or 1 reveals the problem deflated, the tournament drops to lightweight or exits entirely rather than finishing the ceremony.
+- **The blindness is imperfect.** The scorer is a fresh context, but it is the same model family with the same priors. Anonymization removes the generator's stated reasoning, not shared blind spots. Two "independent" scorers can agree because they share training, not because they are right. Mitigation in the skill: every score must cite one concrete fact from the context pack; a score that cannot name its fact is flagged as opinion in the matrix. Grounding in checkable facts is what separates evidence from consensus.
+- **The thresholds are invented, not measured.** The 10% decision margin, the 5% plateau, the 3-round cap, and the weight defaults are sensible-sounding numbers without empirical calibration behind them. The skill logs token spend per tournament so they can be tuned from data, but until that data accumulates, they are judgment dressed as arithmetic. Mitigation in the skill: the thresholds are labeled uncalibrated, and near-misses are surfaced to the user with the matrix instead of being silently decided by the arithmetic.
+- **Forced diversity can produce filler.** When a problem genuinely has one reasonable answer, the requirement for n structurally distinct candidates yields strawmen with premortems. The scoring usually disposes of them cheaply, but generating them still costs tokens, and a weak field can flatter the winner. Mitigation in the skill: the skeptic can issue a filler verdict that drops a non-credible candidate before scoring, and a gutted field is treated as evidence the problem has one reasonable answer, ending the tournament early.
 - **Premortems are speculation.** An imagined failure story is a bias corrector, not a test. Only the spike gate produces evidence, and it applies to a narrow class of problems (spikeable code, close races, full mode).
-- **The disqualification rule depends on naming the symptom correctly.** If the root cause is misdiagnosed in Phase 0, the rule disqualifies the wrong things with full confidence. Rubric approval puts a human check on this, but a user who rubber-stamps inherits the misdiagnosis.
-- **Decision records rot like all documentation.** The compounding benefit assumes future tournaments read them and that they stay true. A stale record that says "approach E was rejected" can block an approach whose blockers have since disappeared.
-- **Process can crowd out thinking.** A tournament run mechanically produces the artifacts (matrix, premortems, record) without the judgment they are meant to carry. The format guarantees the boxes are filled, not that filling them was honest.
+- **The disqualification rule depends on naming the symptom correctly.** If the root cause is misdiagnosed in Phase 0, the rule disqualifies the wrong things with full confidence. Rubric approval puts a human check on this, but a user who rubber-stamps inherits the misdiagnosis. Mitigation in the skill: the root-cause claim must cite observable evidence, and an unverified diagnosis is labeled HYPOTHESIS at the rubric checkpoint so the user knows what they are approving.
+- **Decision records rot like all documentation.** The compounding benefit assumes future tournaments read them and that they stay true. A stale record that says "approach E was rejected" can block an approach whose blockers have since disappeared. Mitigation in the skill: records are treated as dated claims, and a rejection is only carried forward after verifying its original blocker still exists.
+- **Process can crowd out thinking.** A tournament run mechanically produces the artifacts (matrix, premortems, record) without the judgment they are meant to carry. The format guarantees the boxes are filled, not that filling them was honest. Mitigation in the skill: a final honesty check requires mechanically produced artifacts to be redone or labeled weak in the output. Partial, since a check on honesty is still self-administered.
 
 ### The net
 
