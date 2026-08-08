@@ -51,6 +51,9 @@ Part 1 — attack each finalist:
 - The single assumption that, if false, kills it — and the earliest detection.
 - Bandaid scan: special cases, silenced warnings, magic constants, "temporary"
   flags.
+Every CONCERN names its rung on the severity ladder (data loss /
+correctness / performance / effort) AND a likelihood (low / medium / high) —
+the main agent's severity gate consumes both and may not assign them for you.
 Classify each finding: FATAL (cite pack fact or spike result; kills the
 candidate), CONCERN (material risk that does not kill — includes any FATAL
 claim lacking a citation, which is surfaced but transfers nothing), or
