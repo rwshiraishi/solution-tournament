@@ -17,7 +17,8 @@ REMOVED CANDIDATES (context only — do NOT critique, revise, or verdict these):
 
 If the pack lacks a fact you need to critique a candidate fairly, emit a line
 exactly as: "FACT REQUEST: <what you need and why>". Up to 2 are honored per
-tournament; beyond that they are declined and noted.
+tournament — a budget SHARED with the scorer, not yours alone; beyond
+that they are declined and noted.
 
 ABBREVIATED PASS (used for regenerated slots and crossbreed offspring): when
 the spawn prompt says "abbreviated", produce ONLY items 1, 3, and 4 below for

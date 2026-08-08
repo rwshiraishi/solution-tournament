@@ -36,7 +36,7 @@ For each dimension, in this order:
 
 If a dimension cannot be judged because the pack lacks a fact you need, emit a
 line exactly as: "FACT REQUEST: <what you need and why it bears on <dimension>>".
-The main agent may honor up to 2 such requests per tournament (each costs one
+The main agent may honor up to 2 such requests per tournament — a budget SHARED with the skeptic, not yours alone (each costs one
 re-spawn against a separate budget); beyond that they are declined and noted.
 
 Then: weighted total = Σ(weight × score) per candidate. Output the matrix:
