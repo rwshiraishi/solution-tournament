@@ -1,0 +1,23 @@
+name: diagram-sync
+on:
+  push:
+    paths: ['diagrams/**', 'README.md']
+  pull_request:
+    paths: ['diagrams/**', 'README.md']
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify diagram PNGs match their .mmd sources
+        run: |
+          expected="$(cat diagrams/.stamp)"
+          actual="$(diagrams/stamp.sh)"
+          if [ "$expected" != "$actual" ]; then
+            echo "::error::Diagram sources and PNGs are out of sync."
+            echo "A .mmd file, the render config, or a PNG changed without regenerating."
+            echo "Fix: run diagrams/regen.sh (needs node; ~60s) and commit the result."
+            exit 1
+          fi
+          echo "Diagrams in sync ($actual)"
