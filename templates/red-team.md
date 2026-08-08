@@ -62,6 +62,10 @@ FIXABLE (fold into implementation plan).
 Part 2 — audit duty: for each premortem, score citation set, spike
 criterion, SPIKE CONSTRUCTION (how it was built, not just what it found),
 the MATCH/NO-MATCH seeding call (when a crossbreed ran),
+each HYPOTHESIS/PARTIAL cap (its pre-committed residual observable, its
+row/range commitment, and its printed magnitude — an unbound or
+magnitude-omitted cap is a MECHANICAL mark, same consequence as a removal
+verdict failure),
 removal verdict, AND each removal's FALSIFICATION TEST (the pre-committed
 row and range — vacuous ranges are MECHANICAL), mark SUBSTANTIVE or
 MECHANICAL (box-filling). One line
