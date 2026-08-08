@@ -15,6 +15,7 @@ This skill breaks that pattern structurally. It makes the assistant generate sev
 ## The pipeline at a glance
 
 ```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}, "themeVariables": {"fontFamily": "arial"}}}%%
 flowchart TD
     Start([Nontrivial problem]) --> Mode{Pick mode}
     Mode -->|Explicit trigger| Full[Full: n=5, subagents]
@@ -187,6 +188,7 @@ One round is the normal case. Extra rounds are not "more thorough", they are a t
 - **Hard cap**: 3 rounds, no matter what.
 
 ```mermaid
+%%{init: {"flowchart": {"htmlLabels": false}, "themeVariables": {"fontFamily": "arial"}}}%%
 flowchart TD
     Score[Round scored] --> Margin{Margin over 10%?}
 
