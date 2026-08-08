@@ -1,0 +1,1 @@
+- [0002](0002-exec-attribution.md) — what actually caps the executability score: attribution experiment falsifies the density-confession hypothesis; cheapest intervention wins
