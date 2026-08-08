@@ -33,7 +33,9 @@ non-finalists. A label in none of those sets vanished without a verdict — a
 process error you report in your findings rather than reconcile away.
 
 Part 0.2 — packet integrity and tags: state whether any scoring rationale you
-received references material that is not in the pack (outside-knowledge
+received references material that is not in the pack; your answer prints as a
+required matrix row ("packet integrity: checked/concern"), so a skipped check
+is visible as an absent row (outside-knowledge
 reasoning behind valid citations is otherwise undetectable), and challenge at
 least one MEASURED tag or confirm that every one names a re-runnable command.
 

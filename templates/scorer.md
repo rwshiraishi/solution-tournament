@@ -26,6 +26,11 @@ For each dimension, in this order:
 2. Score every candidate 0-10 against those facts (anchors: 2 serious
    deficiency, 5 adequate with real concerns, 8 strong with minor concerns),
    citing quote + locator per score. No citable fact → mark the score OPINION.
+   ALSO output, per scored dimension per candidate, a separate field:
+   "LOCATOR: <quote a mechanism element, assumption, or premortem clause
+   unique to THIS candidate, such that the sentence would be false pasted
+   under another candidate's row>". This is distinct from the pack citation —
+   the return gate rejects a matrix without it as unresponsive.
 3. Force-rank 1..n, no ties (calibration against clustering; ranks do not enter
    totals).
 
