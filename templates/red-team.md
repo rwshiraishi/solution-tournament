@@ -58,6 +58,7 @@ FIXABLE (fold into implementation plan).
 
 Part 2 — audit duty: for each premortem, score citation set, spike
 criterion, SPIKE CONSTRUCTION (how it was built, not just what it found),
+the MATCH/NO-MATCH seeding call (when a crossbreed ran),
 removal verdict, AND each removal's FALSIFICATION TEST (the pre-committed
 row and range — vacuous ranges are MECHANICAL), mark SUBSTANTIVE or
 MECHANICAL (box-filling). One line

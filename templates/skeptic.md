@@ -15,6 +15,9 @@ assumptions, what-breaks-it}
 REMOVED CANDIDATES (context only — do NOT critique, revise, or verdict these):
 {for each: label, text, the DQ test that removed it}
 
+State the pack version this packet names (e.g. pack-v1) at the top of your
+return: "PACK VERSION: <v>".
+
 If the pack lacks a fact you need to critique a candidate fairly, emit a line
 exactly as: "FACT REQUEST: <what you need and why>". Up to 2 are honored per
 tournament — a budget SHARED with the scorer, not yours alone; beyond

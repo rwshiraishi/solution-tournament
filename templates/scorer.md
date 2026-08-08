@@ -34,6 +34,9 @@ For each dimension, in this order:
 3. Force-rank 1..n, no ties (calibration against clustering; ranks do not enter
    totals).
 
+State the pack version this packet names (e.g. pack-v1) at the top of your
+return: "PACK VERSION: <v>".
+
 If a dimension cannot be judged because the pack lacks a fact you need, emit a
 line exactly as: "FACT REQUEST: <what you need and why it bears on <dimension>>".
 The main agent may honor up to 2 such requests per tournament — a budget SHARED with the skeptic, not yours alone (each costs one
