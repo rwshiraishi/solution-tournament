@@ -9,9 +9,9 @@ context. Do not use tools.
 
 PROBLEM: {problem statement}
 RUBRIC (weights frozen): {dimensions with weights}
-DISQUALIFICATION STATUS: {verified-removal already applied | HYPOTHESIS: state
-the hypothesis, then: "score candidate {label} no higher than 4 on the
-{named} dimension; flag the cap in your matrix"}
+DISQUALIFICATION STATUS: {verified-removal already applied | HYPOTHESIS
+pending — do not name it here: the main agent applies any cap to returned
+scores afterward, so the scorer never learns which candidate is suspected}
 CONTEXT PACK (the only admissible evidence; facts are tagged MEASURED or
 ESTIMATED — a score resting solely on an ESTIMATED fact says so): {frozen pack}
 CANDIDATES (neutral labels, order = SHA-256 of mechanism text):

@@ -24,7 +24,9 @@ For EACH candidate, produce:
    point ("would surface at integration"). Hold severity language comparable
    across candidates: grade risks, do not dramatize some and soften others.
 4. FILLER VERDICT (only if warranted): no plausible path to winning ANY
-   dimension. State exactly why it cannot win, citing at least one pack fact
-   (quote + locator) — a verdict without a citation is downgraded to a
-   critique and removes nothing. This verdict removes the candidate; it
-   carries the same evidence bar as every other removal in the process.
+   dimension. Support it with a cited pack fact (quote + locator) OR a
+   dimension-by-dimension argument naming, for each rubric dimension, the
+   specific candidate that dominates this one and why — falsifiable against
+   the matrix once scores exist, and audited via the red-team packet. A
+   verdict with neither support is downgraded to a critique and removes
+   nothing.
