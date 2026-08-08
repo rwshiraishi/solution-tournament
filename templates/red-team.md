@@ -26,7 +26,7 @@ spikes did NOT reproduce}
 
 Part 0 — interrogate the pack FIRST: name any fact this pack asserts that you
 would want verified before trusting a verdict built on it, and any question the
-pack is silent on. A FATAL verdict resting solely on an ESTIMATED fact must say
+pack is silent on. Your FATAL verdicts are provisional: on return the main agent re-checks each against a stricter bar (a MEASURED, in-session-re-run fact on the attacked dimension) and demotes to CONCERN any that fail — so state your evidence precisely rather than reaching for FATAL. A FATAL verdict resting solely on an ESTIMATED fact must say
 so. Note: your audit covers only what you received. Your packet includes every
 candidate label ever issued (Phase 1 plus offspring) and a roster of scored
 non-finalists: check that labels issued = finalists + removals + scored
