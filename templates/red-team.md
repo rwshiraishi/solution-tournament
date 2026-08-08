@@ -10,7 +10,8 @@ Do not use tools; the main agent builds any spikes and passes you the results.
 
 PROBLEM: {problem statement}
 CONTEXT PACK: {frozen pack + logged late additions}
-PHASE 1 FIELD: {initial n, every candidate label issued}
+FIELD ROSTER: {every candidate label ever issued (Phase 1 + offspring), and
+which of them are scored non-finalists}
 PRE-REGISTRATION: {the agent's Phase 0 expected-winner sentence — audit the
 crossbreed MATCH/NO-MATCH call against it}
 FINALIST(S): {label, mechanism, premortem, scores}
@@ -22,11 +23,16 @@ spikes did NOT reproduce}
 Part 0 — interrogate the pack FIRST: name any fact this pack asserts that you
 would want verified before trusting a verdict built on it, and any question the
 pack is silent on. A FATAL verdict resting solely on an ESTIMATED fact must say
-so. Note: your audit covers only what you received. Your packet includes the
-Phase 1 field size n and every candidate label ever issued: check that n minus
-the finalists you received equals the removals you received — a shortfall means
-a candidate vanished without a verdict, a process error you report in your
-findings rather than reconcile away.
+so. Note: your audit covers only what you received. Your packet includes every
+candidate label ever issued (Phase 1 plus offspring) and a roster of scored
+non-finalists: check that labels issued = finalists + removals + scored
+non-finalists. A label in none of those sets vanished without a verdict — a
+process error you report in your findings rather than reconcile away.
+
+Part 0.5 — field ceiling: name ONE credible approach absent from the Phase 1
+field (check the labels list), or state that none exists. An absent approach
+that could plausibly win a rubric dimension is grounds to reopen Phase 1 —
+you are the only fresh eyes that can see what was never fielded.
 
 Part 1 — attack each finalist:
 - 10x data/traffic/users: what breaks first? Cite the pack fact that says so.
