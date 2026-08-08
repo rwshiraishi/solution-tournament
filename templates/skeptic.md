@@ -37,8 +37,10 @@ For EACH candidate, produce:
 4. FILLER VERDICT (only if warranted): no plausible path to winning ANY
    dimension. Support it with a cited pack fact (quote + locator) PLUS a pre-commitment —
    name one SURVIVING candidate's row and the score range this fact's
-   implication ENTAILS there, so the verdict can later fail against the
-   matrix — OR a dimension-by-dimension argument naming, for each rubric
+   implication ENTAILS there — the range must EXCLUDE at least half the
+   0–10 scale and name the matrix result that would falsify it; a wider
+   range makes your verdict UNFALSIFIABLE and it will be discarded — so
+   the verdict can later fail against the matrix — OR a dimension-by-dimension argument naming, for each rubric
    dimension, the specific candidate that dominates this one and why — falsifiable against
    the matrix once scores exist, and audited via the red-team packet. A
    verdict with neither support is downgraded to a critique and removes
