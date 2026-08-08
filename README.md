@@ -12,6 +12,44 @@ Humans do this too. But an assistant does it faster, with more confidence, and w
 
 This skill breaks that pattern structurally. It makes the assistant generate several solutions that differ on named architectural axes, subject each one to an adversarial skeptic, score them blind against a rubric that was locked before generation, and red-team the winner before implementation. Bandaid fixes are not just discouraged. They are disqualified by rule.
 
+## The pipeline at a glance
+
+```mermaid
+flowchart TD
+    Start([Problem worth competing over]) --> Mode{Pick the mode}
+    Mode -->|Contained bug,<br/>reversible, single file| LW[Lightweight: n=3,<br/>no subagents]
+    Mode -->|Architecture, failed fix,<br/>high blast radius| Full[Full: n=5,<br/>subagent scoring]
+
+    LW --> P0
+    Full --> P0
+
+    P0["Phase 0: Lock the rubric<br/>dimensions, weights, disqualification rule,<br/>read past decision records"] --> Approve{User approves<br/>rubric?}
+    Approve -->|Adjust| P0
+    Approve -->|Yes, weights freeze| P1
+
+    P1["Phase 1: Generate n solutions<br/>each on a distinct structural axis,<br/>one obvious, one unconventional"] --> Diverse{Structurally<br/>diverse?}
+    Diverse -->|"Paraphrases of one idea"| P1
+    Diverse -->|Yes| P15
+
+    P15["Phase 1.5: Skeptic pass<br/>one batched attack on all candidates,<br/>revision + premortem each"] --> P2
+
+    P2["Phase 2: Blind scoring<br/>anonymized candidates, locked rubric,<br/>disqualification rule applied first,<br/>forced ranking per dimension"] --> Gate{"Phase 3:<br/>Clear winner?<br/>margin > 10%"}
+
+    Gate -->|"No, and rounds < 3<br/>and score still improving"| Cross["Crossbreed round:<br/>top 2-3 produce offspring<br/>+ 1 mutation"]
+    Cross --> P2
+    Gate -->|"Yes, or plateau,<br/>or round 3"| P4
+
+    P4["Phase 4: Red-team the winner<br/>10x scale, 6-months test,<br/>killer assumption, bandaid check"] --> Fatal{Fatal flaw?}
+    Fatal -->|Yes| RunnerUp[Runner-up enters Phase 4]
+    RunnerUp --> P4
+    Fatal -->|"Fixable issues"| P5
+    Fatal -->|Clean| P5
+
+    P5["Phase 5: Implement to production standard<br/>tests for the motivating failure,<br/>write decision record to docs/decisions/"] --> End([Done: matrix + decision trail + implementation])
+```
+
+Two loops can fire along the way: a **crossbreed loop** back into scoring when no candidate wins decisively, and a **runner-up loop** in red-team if the winner has a fatal flaw. Both are bounded. The next section explains exactly when each triggers.
+
 ## How it works
 
 The pipeline is generate, score, crossbreed, implement. Six phases:
@@ -89,13 +127,67 @@ Production standard means: tests covering the failure mode that motivated the to
 
 The tournament ends by writing a **decision record** to `docs/decisions/`: problem, rubric and weights, final score matrix, winner and why, runner-up, red-team findings and mitigations. Future tournaments read these records in Phase 0. This is how the process compounds instead of resetting every session.
 
-## Two modes
+## One round or many? One agent or many?
 
-**Lightweight mode** (the default): contained bug, single-file change, reversible decision. Three candidates, one round, inline adversarial scoring, no subagents. Every principle still applies, just cheaper.
+Two independent dials control how heavy a tournament gets. **Stakes** set the mode (how many candidates, whether subagents run). **Score margin** sets the round count (whether crossbreeding happens). They are decided at different times: the mode is chosen up front, the round count emerges from the scores.
 
-**Full tournament**: architecture decisions, cross-cutting changes, high blast radius, a previous fix that failed, or data-integrity stakes. Five candidates, subagent scoring, up to 3 rounds.
+### Dial 1: Stakes pick the mode (decided before the tournament starts)
 
-Full mode must be justified by an explicit trigger. The skill will not burn tokens on ceremony for a typo fix, and it will not skip rigor on a schema migration.
+| | Lightweight (default) | Full tournament |
+|---|---|---|
+| When | Contained bug, single-file change, reversible decision | Architecture, cross-cutting change, high blast radius, a previous fix failed, data-integrity stakes |
+| Candidates | 3 | 5 |
+| Skeptic pass | Inline: a clearly separated adversarial pass in the main thread | A fresh subagent attacks all candidates in one batched call |
+| Scoring | Inline: steelman the case against each candidate, then score | A blind subagent sees only anonymized candidates + rubric |
+| Scorers | 1 (self, in a separated pass) | 1 subagent; **2 independent subagents** for high-stakes rounds, aggregated by median rank |
+| Red-team | Inline | Fresh subagent |
+| Spike gate | Not used | Available for close races on spikeable problems |
+| Rounds possible | Usually 1 | Up to 3 |
+
+Lightweight is the default. Full mode requires an explicit trigger, so a typo fix never gets ceremony and a schema migration never skips rigor. Every principle (locked rubric, structural diversity, premortems, disqualification rule, full matrix) applies in both modes. What changes is who does the work: in lightweight mode the main thread wears different hats in separated passes; in full mode, independent subagents wear them, which buys real blindness at the cost of tokens.
+
+### Dial 2: Score margin picks the round count (decided by the results)
+
+One round is the normal case. Extra rounds are not "more thorough", they are a tiebreaker, and they only run when the scores say the race is genuinely close:
+
+- **Clear winner (weighted margin > 10%)**: one round. Straight to red-team.
+- **Close race (margin <= 10%)**: crossbreed round. The top 2 or 3 candidates produce offspring that explicitly name which traits they inherit from which parents, plus one mutation (a single perturbed assumption). The same frozen rubric scores the new field.
+- **Plateau (top score improves < 5% round over round)**: stop, take the leader. Further rounds are churn.
+- **Hard cap**: 3 rounds, no matter what.
+
+```mermaid
+flowchart TD
+    Score["Round scored:<br/>weighted matrix computed"] --> Margin{"Winner's margin"}
+
+    Margin -->|"> 10%"| Win["One round is enough.<br/>Winner to red-team."]
+    Margin -->|"<= 10%"| Checks{"Round 3 reached,<br/>or improvement < 5%<br/>vs last round?"}
+
+    Checks -->|Yes| Plateau["Stop. Take the leader<br/>to red-team."]
+    Checks -->|No| Cross["Crossbreed: offspring from<br/>top 2-3 + one mutation.<br/>Rescore with frozen rubric."]
+    Cross --> Score
+
+    Win --> RT{Red-team}
+    Plateau --> RT
+
+    RT -->|"Race was close<br/>(top two within 10%)"| Both["Red-team BOTH finalists in parallel.<br/>Full mode + spikeable problem:<br/>build a capped throwaway spike of each,<br/>let measurements break the tie"]
+    RT -->|Decisive winner| One["Red-team the winner alone"]
+
+    Both --> Impl[Implement]
+    One --> Impl
+```
+
+A close race also changes the endgame. When the top two finish within 10%, both are red-teamed in parallel, so the runner-up cannot inherit the crown unexamined if the winner falls. And in full mode, if the problem is code rather than strategy, the **spike gate** opens: a minimal time-capped throwaway prototype of each finalist tests the killer assumption from its premortem, and the measurements break the tie instead of judgment.
+
+### Where the agents are (full mode)
+
+Subagent boundaries exist for one reason: information hiding. The scorer must not see the generation reasoning, or it inherits the generator's favorite.
+
+- **1 generator** (main thread): runs Phase 0 and Phase 1, holds full context.
+- **1 skeptic subagent**: attacks all candidates in one batched call. One skeptic, not one per candidate, because the skeptic ranks nothing, so its independence buys little.
+- **1 scoring subagent** (2 for high-stakes rounds): receives only the context pack and anonymized candidates. This is the boundary that matters most. Two scorers aggregate by median rank, and sharp disagreement between them is surfaced to the user as signal.
+- **1 red-team subagent** (2 in parallel when the race was close).
+
+Deliberation stays inside the subagents. Only summaries, the matrix, and decisions return to the main thread.
 
 ## When it triggers
 
