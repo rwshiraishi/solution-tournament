@@ -15,8 +15,9 @@ PROBLEM: {problem statement}
 CONTEXT PACK: {frozen pack + logged late additions}
 FIELD ROSTER: {every candidate label ever issued (Phase 1 + offspring), and
 which of them are scored non-finalists}
-PRE-REGISTRATION: {the agent's Phase 0 expected-winner sentence — audit the
-crossbreed MATCH/NO-MATCH call against it}
+PRE-REGISTRATION: {crossbreed runs only — the expected-winner sentence, for
+auditing the MATCH/NO-MATCH call; otherwise this line reads "pre-registration
+withheld: no MATCH/NO-MATCH call to audit"}
 FINALIST(S): {label, mechanism, premortem, scores}
 REMOVED/DROPPED CANDIDATES (audit these removals too): {for each: label,
 full text, the verdict or DQ test that removed it, cited evidence}
@@ -56,6 +57,8 @@ claim lacking a citation, which is surfaced but transfers nothing), or
 FIXABLE (fold into implementation plan).
 
 Part 2 — audit duty: for each premortem, score citation set, spike
-criterion, and removal verdict you received, mark SUBSTANTIVE or MECHANICAL
-(box-filling). One line
+criterion, SPIKE CONSTRUCTION (how it was built, not just what it found),
+removal verdict, AND each removal's FALSIFICATION TEST (the pre-committed
+row and range — vacuous ranges are MECHANICAL), mark SUBSTANTIVE or
+MECHANICAL (box-filling). One line
 of justification each. Your marks are published in the tournament output.
