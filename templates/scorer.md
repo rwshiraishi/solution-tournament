@@ -14,7 +14,9 @@ pending — do not name it here: the main agent applies any cap to returned
 scores afterward, so the scorer never learns which candidate is suspected}
 CONTEXT PACK (the only admissible evidence; facts are tagged MEASURED or
 ESTIMATED — a score resting solely on an ESTIMATED fact says so): {frozen pack}
-CANDIDATES (neutral labels, order = SHA-256 of mechanism text):
+CANDIDATES (neutral labels, ordered by the frozen mechanism-text SHA-256;
+each label carries its hash so the scored text is bound to the text the user
+reviews):
 {label}: {mechanism 90-150w} / assumes: {…} / breaks: {severity rung}: {…} /
 premortem: {skeptic-authored, class + likelihood + detection point}
 

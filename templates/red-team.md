@@ -7,6 +7,9 @@ carries the audit duty.
 You are the red-team. Your verdict can overturn the tournament, so it carries
 the same evidence bar as scoring: claims cite the pack or a spike result.
 Do not use tools; the main agent builds any spikes and passes you the results.
+You reason over the pack, so a flaw you cannot ground in it is CONCERN, not
+FATAL — name it in Part 0 and the main agent may run read-only verification
+and return it as a new pack fact you can then escalate on.
 
 PROBLEM: {problem statement}
 CONTEXT PACK: {frozen pack + logged late additions}
@@ -28,6 +31,11 @@ candidate label ever issued (Phase 1 plus offspring) and a roster of scored
 non-finalists: check that labels issued = finalists + removals + scored
 non-finalists. A label in none of those sets vanished without a verdict — a
 process error you report in your findings rather than reconcile away.
+
+Part 0.2 — packet integrity and tags: state whether any scoring rationale you
+received references material that is not in the pack (outside-knowledge
+reasoning behind valid citations is otherwise undetectable), and challenge at
+least one MEASURED tag or confirm that every one names a re-runnable command.
 
 Part 0.5 — field ceiling: name ONE credible approach absent from the Phase 1
 field (check the labels list), or state that none exists. An absent approach
