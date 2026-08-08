@@ -16,39 +16,55 @@ This skill breaks that pattern structurally. It makes the assistant generate sev
 
 ```mermaid
 flowchart TD
-    Start([Problem worth competing over]) --> Mode{Pick the mode}
-    Mode -->|Contained bug,<br/>reversible, single file| LW[Lightweight: n=3,<br/>no subagents]
-    Mode -->|Architecture, failed fix,<br/>high blast radius| Full[Full: n=5,<br/>subagent scoring]
+    Start([Nontrivial problem]) --> Mode{Pick mode}
+    Mode -->|Explicit trigger| Full[Full: n=5, subagents]
+    Mode -->|Default| LW[Lightweight: n=3, inline]
 
-    LW --> P0
     Full --> P0
+    LW --> P0
 
-    P0["Phase 0: Lock the rubric<br/>dimensions, weights, disqualification rule,<br/>read past decision records"] --> Approve{User approves<br/>rubric?}
-    Approve -->|Adjust| P0
-    Approve -->|Yes, weights freeze| P1
+    P0[Phase 0: Propose rubric] --> Approve{User approves rubric}
+    Approve -->|Adjust weights| P0
+    Approve -->|Approved: weights freeze| P1
 
-    P1["Phase 1: Generate n solutions<br/>each on a distinct structural axis,<br/>one obvious, one unconventional"] --> Diverse{Structurally<br/>diverse?}
-    Diverse -->|"Paraphrases of one idea"| P1
+    P1[Phase 1: Generate n solutions] --> Diverse{Structurally diverse?}
+    Diverse -->|No: regenerate| P1
     Diverse -->|Yes| P15
 
-    P15["Phase 1.5: Skeptic pass<br/>one batched attack on all candidates,<br/>revision + premortem each"] --> P2
+    P15[Phase 1.5: Skeptic + premortems] --> P2
+    P2[Phase 2: Blind scoring] --> Gate{Margin over 10%?}
 
-    P2["Phase 2: Blind scoring<br/>anonymized candidates, locked rubric,<br/>disqualification rule applied first,<br/>forced ranking per dimension"] --> Gate{"Phase 3:<br/>Clear winner?<br/>margin > 10%"}
-
-    Gate -->|"No, and rounds < 3<br/>and score still improving"| Cross["Crossbreed round:<br/>top 2-3 produce offspring<br/>+ 1 mutation"]
+    Gate -->|No| Cross[Crossbreed round]
     Cross --> P2
-    Gate -->|"Yes, or plateau,<br/>or round 3"| P4
+    Gate -->|Yes, or plateau, or round 3| P4
 
-    P4["Phase 4: Red-team the winner<br/>10x scale, 6-months test,<br/>killer assumption, bandaid check"] --> Fatal{Fatal flaw?}
-    Fatal -->|Yes| RunnerUp[Runner-up enters Phase 4]
-    RunnerUp --> P4
-    Fatal -->|"Fixable issues"| P5
-    Fatal -->|Clean| P5
+    P4[Phase 4: Red-team winner] --> Fatal{Fatal flaw?}
+    Fatal -->|Yes| Runner[Runner-up enters red-team]
+    Runner --> P4
+    Fatal -->|No| Plan{User approves plan}
+    Plan --> P5[Phase 5: Implement + decision record]
+    P5 --> End([Done: matrix + trail + code])
 
-    P5["Phase 5: Implement to production standard<br/>tests for the motivating failure,<br/>write decision record to docs/decisions/"] --> End([Done: matrix + decision trail + implementation])
+    classDef user fill:#f6c344,stroke:#8a6d1a,color:#1a1a1a
+    classDef mech fill:#e8e8e8,stroke:#666,color:#1a1a1a,stroke-dasharray: 4 3
+    class Approve,Plan user
+    class Diverse,Gate,Fatal mech
 ```
 
-Two loops can fire along the way: a **crossbreed loop** back into scoring when no candidate wins decisively, and a **runner-up loop** in red-team if the winner has a fatal flaw. Both are bounded. The next section explains exactly when each triggers.
+**Reading the colors: amber nodes are decisions the user makes. Dashed gray nodes are mechanical gates decided by rules and scores, with no judgment involved. Everything else is the LLM's work.**
+
+The user touches the tournament at exactly two points: approving the rubric weights before generation (Phase 0), and approving the implementation plan before code is written (plan mode, for multi-file changes). Everything between those two points runs without the user, except that close calls and scorer disagreements are surfaced rather than silently resolved.
+
+Node detail that used to live in the diagram, now here where it fits:
+
+- **Pick mode** (LLM): lightweight is the default; full mode requires an explicit trigger (architecture, failed prior fix, high blast radius, or user request). When genuinely unsure, the LLM asks in one sentence.
+- **Phase 0** (LLM proposes, user disposes): dimensions, weights, the disqualification rule, and a read of past decision records. Weights encode the user's values, which is why this is a user gate.
+- **Structurally diverse?** (mechanical): each candidate must differ on a named structural axis. Paraphrases of one idea fail the check and force regeneration.
+- **Margin over 10%?** (mechanical): the weighted score margin alone decides whether another round runs. Details in the rounds section below.
+- **Phase 4** covers 10x scale, the 6-months test, the killer-assumption question, and the bandaid check.
+- **Phase 5** requires tests for the motivating failure and writes the decision record to `docs/decisions/`.
+
+Two loops can fire along the way: a **crossbreed loop** back into scoring when no candidate wins decisively, and a **runner-up loop** in red-team if the winner has a fatal flaw. Both are bounded.
 
 ## How it works
 
@@ -127,9 +143,24 @@ Production standard means: tests covering the failure mode that motivated the to
 
 The tournament ends by writing a **decision record** to `docs/decisions/`: problem, rubric and weights, final score matrix, winner and why, runner-up, red-team findings and mitigations. Future tournaments read these records in Phase 0. This is how the process compounds instead of resetting every session.
 
+## Who decides what
+
+Every decision in the tournament has exactly one owner: the user, the LLM, or a mechanical rule. Nothing is jointly owned, so nothing falls through the gap.
+
+| Decision | Owner | How |
+|---|---|---|
+| Mode (lightweight vs. full) | LLM | Lightweight by default; full only on an explicit trigger. Asks the user when genuinely unsure. The user can always force full mode by requesting it. |
+| Rubric dimensions and weights | **User** | LLM proposes, user approves or adjusts before generation. The single highest-leverage user decision: weights encode values. Skippable only if the user pre-authorized autonomous runs. |
+| Disqualification rule (what counts as the symptom) | LLM | Proposed alongside the rubric, so the user sees it at the same gate. |
+| Candidates, critiques, premortems, scores | LLM | Subagents in full mode, separated passes in lightweight mode. |
+| Number of rounds | **Nobody** | Mechanical: score margin over 10% ends it, plateau under 5% ends it, round 3 ends it. No judgment involved. |
+| Spike gate (build tiebreak prototypes?) | LLM | Opens automatically when the race is close and the problem is spikeable code. Effort is capped. |
+| Close calls and scorer disagreements | **User** | Sharp inter-judge disagreement or a near-tie with a real tradeoff is surfaced with the matrix, not resolved silently. |
+| Implementation plan (multi-file changes) | **User** | Plan mode approval before edits. |
+
 ## One round or many? One agent or many?
 
-Two independent dials control how heavy a tournament gets. **Stakes** set the mode (how many candidates, whether subagents run). **Score margin** sets the round count (whether crossbreeding happens). They are decided at different times: the mode is chosen up front, the round count emerges from the scores.
+Two independent dials control how heavy a tournament gets. **Stakes** set the mode (how many candidates, whether subagents run). **Score margin** sets the round count (whether crossbreeding happens). They are decided at different times: the LLM chooses the mode up front, and the round count emerges from the scores with no one choosing at all.
 
 ### Dial 1: Stakes pick the mode (decided before the tournament starts)
 
@@ -157,24 +188,26 @@ One round is the normal case. Extra rounds are not "more thorough", they are a t
 
 ```mermaid
 flowchart TD
-    Score["Round scored:<br/>weighted matrix computed"] --> Margin{"Winner's margin"}
+    Score[Round scored] --> Margin{Margin over 10%?}
 
-    Margin -->|"> 10%"| Win["One round is enough.<br/>Winner to red-team."]
-    Margin -->|"<= 10%"| Checks{"Round 3 reached,<br/>or improvement < 5%<br/>vs last round?"}
+    Margin -->|Yes: decisive| One[Red-team winner alone]
+    Margin -->|No: close race| Cap{Round 3, or plateau?}
 
-    Checks -->|Yes| Plateau["Stop. Take the leader<br/>to red-team."]
-    Checks -->|No| Cross["Crossbreed: offspring from<br/>top 2-3 + one mutation.<br/>Rescore with frozen rubric."]
+    Cap -->|No| Cross[Crossbreed and rescore]
     Cross --> Score
+    Cap -->|Yes: stop| Both[Red-team both finalists]
 
-    Win --> RT{Red-team}
-    Plateau --> RT
-
-    RT -->|"Race was close<br/>(top two within 10%)"| Both["Red-team BOTH finalists in parallel.<br/>Full mode + spikeable problem:<br/>build a capped throwaway spike of each,<br/>let measurements break the tie"]
-    RT -->|Decisive winner| One["Red-team the winner alone"]
-
-    Both --> Impl[Implement]
+    Both --> Spike{Spikeable code?}
+    Spike -->|Yes| Spikes[Capped spikes break the tie]
+    Spike -->|No| Impl
+    Spikes --> Impl[Implement]
     One --> Impl
+
+    classDef mech fill:#e8e8e8,stroke:#666,color:#1a1a1a,stroke-dasharray: 4 3
+    class Margin,Cap,Spike mech
 ```
+
+**Every gate in this diagram is mechanical (dashed gray): margins, round caps, and plateau thresholds decide, not judgment.** The user does not appear here at all, with one exception covered in the table above: when the stopped race is a genuine tradeoff, the finalists go to the user with the matrix and the red-team findings, as in the example below.
 
 A close race also changes the endgame. When the top two finish within 10%, both are red-teamed in parallel, so the runner-up cannot inherit the crown unexamined if the winner falls. And in full mode, if the problem is code rather than strategy, the **spike gate** opens: a minimal time-capped throwaway prototype of each finalist tests the killer assumption from its premortem, and the measurements break the tie instead of judgment.
 
