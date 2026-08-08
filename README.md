@@ -219,6 +219,34 @@ You can always prompt "give me 3 options and pick the best." Here is what that g
 
 **And the structural difference from other review-style skills:** most quality skills inspect work after it exists (code review, verification loops, red-teaming a finished plan). The tournament applies pressure before and during solution selection, when changing course is cheap. It is anti-bandaid by construction, not by inspection: symptom patches are disqualified at the rubric level, and the "is this a bandaid wearing a suit" check runs before a single production line is written.
 
+## Honest pros and cons
+
+The tournament is a bet that structure beats improvisation for consequential decisions. Like any bet, it has a price. Decide with both columns visible.
+
+### Pros
+
+- **Structural diversity is enforced, not hoped for.** The named-axis requirement plus a reserved slot for the obvious approach means you actually see the solution space, including the option you would have picked anyway, ranked against real alternatives.
+- **The scoring bias countermeasures are real.** Locked-first rubrics, anonymized candidates, excluded generation reasoning, and forced ranking each remove a specific, documented failure mode of self-evaluation. None is perfect (see cons), but each closes a door.
+- **Bandaids are disqualified at the rubric level.** A symptom patch scores zero before scoring even starts. This is prevention by construction, not detection by review.
+- **Close calls get evidence, not confidence.** The spike gate replaces "I believe A is faster" with a measured number from a throwaway prototype.
+- **It compounds.** Decision records mean the tenth tournament in a codebase inherits the constraints and rejected approaches of the first nine. Ad-hoc deliberation starts from zero every session.
+- **Cost is bounded and calibrated.** Lightweight mode exists precisely so the machinery scales down; round caps and plateau detection stop churn; deliberation stays in subagents.
+
+### Cons
+
+- **It costs real tokens and real time.** A full tournament spawns a skeptic, one or two scorers, and one or two red-teamers, across up to three rounds. That is several times the cost of just implementing the obvious fix. When the obvious fix is actually right (often), the tournament is pure overhead that ends by selecting it anyway.
+- **The blindness is imperfect.** The scorer is a fresh context, but it is the same model family with the same priors. Anonymization removes the generator's stated reasoning, not shared blind spots. Two "independent" scorers can agree because they share training, not because they are right.
+- **The thresholds are invented, not measured.** The 10% decision margin, the 5% plateau, the 3-round cap, and the weight defaults are sensible-sounding numbers without empirical calibration behind them. The skill logs token spend per tournament so they can be tuned from data, but until that data accumulates, they are judgment dressed as arithmetic.
+- **Forced diversity can produce filler.** When a problem genuinely has one reasonable answer, the requirement for n structurally distinct candidates yields strawmen with premortems. The scoring usually disposes of them cheaply, but generating them still costs tokens, and a weak field can flatter the winner.
+- **Premortems are speculation.** An imagined failure story is a bias corrector, not a test. Only the spike gate produces evidence, and it applies to a narrow class of problems (spikeable code, close races, full mode).
+- **The disqualification rule depends on naming the symptom correctly.** If the root cause is misdiagnosed in Phase 0, the rule disqualifies the wrong things with full confidence. Rubric approval puts a human check on this, but a user who rubber-stamps inherits the misdiagnosis.
+- **Decision records rot like all documentation.** The compounding benefit assumes future tournaments read them and that they stay true. A stale record that says "approach E was rejected" can block an approach whose blockers have since disappeared.
+- **Process can crowd out thinking.** A tournament run mechanically produces the artifacts (matrix, premortems, record) without the judgment they are meant to carry. The format guarantees the boxes are filled, not that filling them was honest.
+
+### The net
+
+Use it when being wrong is expensive: architecture, migrations, anything with a failed fix already behind it, anything hard to reverse. Skip it when being wrong costs a revert: the lightweight mode exists for the middle ground, and for genuinely trivial changes even that is ceremony. The skill's own calibration section says the same thing, which is a point in its favor: it does not claim to be free.
+
 ## Cost discipline
 
 Deliberation stays in subagents. Only summaries, the score matrix, and decisions return to the main thread, so the tournament's transcript does not crowd out the implementation's context. Decision records are one page max. Token spend is logged per tournament, so calibration thresholds move based on real usage data, not intuition.
