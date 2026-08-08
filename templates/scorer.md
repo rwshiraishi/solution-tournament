@@ -29,6 +29,11 @@ For each dimension, in this order:
 3. Force-rank 1..n, no ties (calibration against clustering; ranks do not enter
    totals).
 
+If a dimension cannot be judged because the pack lacks a fact you need, emit a
+line exactly as: "FACT REQUEST: <what you need and why it bears on <dimension>>".
+The main agent may honor up to 2 such requests per tournament (each costs one
+re-spawn against a separate budget); beyond that they are declined and noted.
+
 Then: weighted total = Σ(weight × score) per candidate. Output the matrix:
 rows = candidates, per dimension columns = score / rank / citation-or-OPINION,
 final column = weighted total. Flag any dimension where more than half your

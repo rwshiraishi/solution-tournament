@@ -13,6 +13,10 @@ RUBRIC DIMENSIONS (no weights needed): {dimensions}
 CANDIDATES: {for each: label, named structural axis, mechanism 90-150w,
 assumptions, what-breaks-it}
 
+If the pack lacks a fact you need to critique a candidate fairly, emit a line
+exactly as: "FACT REQUEST: <what you need and why>". Up to 2 are honored per
+tournament; beyond that they are declined and noted.
+
 For EACH candidate, produce:
 1. CRITIQUE: strongest attacks on mechanism, assumptions, hidden costs.
 2. REVISION GUIDANCE: how to strengthen it WITHOUT changing its named axis. If
