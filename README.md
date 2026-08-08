@@ -47,12 +47,12 @@ flowchart TD
     P5 --> End([Done: matrix + trail + code])
 
     classDef user fill:#f6c344,stroke:#8a6d1a,color:#1a1a1a
-    classDef mech fill:#e8e8e8,stroke:#666,color:#1a1a1a,stroke-dasharray: 4 3
+    classDef mech stroke:#888,stroke-width:1.5px,stroke-dasharray: 4 3
     class Approve,Plan user
     class Diverse,Gate,Fatal mech
 ```
 
-**Reading the colors: amber nodes are decisions the user makes. Dashed gray nodes are mechanical gates decided by rules and scores, with no judgment involved. Everything else is the LLM's work.**
+**Reading the diagram: amber nodes are decisions the user makes. Dashed-outline nodes are mechanical gates decided by rules and scores, with no judgment involved. Everything else is the LLM's work.**
 
 The user touches the tournament at exactly two points: approving the rubric weights before generation (Phase 0), and approving the implementation plan before code is written (plan mode, for multi-file changes). Everything between those two points runs without the user, except that close calls and scorer disagreements are surfaced rather than silently resolved.
 
@@ -205,11 +205,11 @@ flowchart TD
     Spikes --> Impl[Implement]
     One --> Impl
 
-    classDef mech fill:#e8e8e8,stroke:#666,color:#1a1a1a,stroke-dasharray: 4 3
+    classDef mech stroke:#888,stroke-width:1.5px,stroke-dasharray: 4 3
     class Margin,Cap,Spike mech
 ```
 
-**Every gate in this diagram is mechanical (dashed gray): margins, round caps, and plateau thresholds decide, not judgment.** The user does not appear here at all, with one exception covered in the table above: when the stopped race is a genuine tradeoff, the finalists go to the user with the matrix and the red-team findings, as in the example below.
+**Every gate in this diagram is mechanical (dashed outline): margins, round caps, and plateau thresholds decide, not judgment.** The user does not appear here at all, with one exception covered in the table above: when the stopped race is a genuine tradeoff, the finalists go to the user with the matrix and the red-team findings, as in the example below.
 
 A close race also changes the endgame. When the top two finish within 10%, both are red-teamed in parallel, so the runner-up cannot inherit the crown unexamined if the winner falls. And in full mode, if the problem is code rather than strategy, the **spike gate** opens: a minimal time-capped throwaway prototype of each finalist tests the killer assumption from its premortem, and the measurements break the tie instead of judgment.
 
