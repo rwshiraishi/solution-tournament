@@ -1,0 +1,35 @@
+%%{init: {"flowchart": {"htmlLabels": false}, "themeVariables": {"fontFamily": "arial"}}}%%
+flowchart TD
+    Start([Nontrivial problem]) --> Mode{Pick mode}
+    Mode -->|Explicit trigger| Full[Full: n=5, subagents]
+    Mode -->|Default| LW[Lightweight: n=3, inline]
+
+    Full --> P0
+    LW --> P0
+
+    P0[Phase 0: Propose rubric] --> Approve{User approves rubric}
+    Approve -->|Adjust weights| P0
+    Approve -->|Approved: weights freeze| P1
+
+    P1[Phase 1: Generate n solutions] --> Diverse{Structurally diverse?}
+    Diverse -->|No: regenerate| P1
+    Diverse -->|Yes| P15
+
+    P15[Phase 1.5: Skeptic + premortems] --> P2
+    P2[Phase 2: Blind scoring] --> Gate{Margin over 10%?}
+
+    Gate -->|No| Cross[Crossbreed round]
+    Cross --> P2
+    Gate -->|Yes, or plateau, or round 3| P4
+
+    P4[Phase 4: Red-team winner] --> Fatal{Fatal flaw?}
+    Fatal -->|Yes| Runner[Runner-up enters red-team]
+    Runner --> P4
+    Fatal -->|No| Plan{User approves plan}
+    Plan --> P5[Phase 5: Implement + decision record]
+    P5 --> End([Done: matrix + trail + code])
+
+    classDef user fill:#f6c344,stroke:#8a6d1a,color:#1a1a1a
+    classDef mech stroke:#888,stroke-width:1.5px,stroke-dasharray: 4 3
+    class Approve,Plan user
+    class Diverse,Gate,Fatal mech

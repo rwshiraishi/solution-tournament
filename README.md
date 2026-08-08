@@ -14,43 +14,10 @@ This skill breaks that pattern structurally. It makes the assistant generate sev
 
 ## The pipeline at a glance
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}, "themeVariables": {"fontFamily": "arial"}}}%%
-flowchart TD
-    Start([Nontrivial problem]) --> Mode{Pick mode}
-    Mode -->|Explicit trigger| Full[Full: n=5, subagents]
-    Mode -->|Default| LW[Lightweight: n=3, inline]
-
-    Full --> P0
-    LW --> P0
-
-    P0[Phase 0: Propose rubric] --> Approve{User approves rubric}
-    Approve -->|Adjust weights| P0
-    Approve -->|Approved: weights freeze| P1
-
-    P1[Phase 1: Generate n solutions] --> Diverse{Structurally diverse?}
-    Diverse -->|No: regenerate| P1
-    Diverse -->|Yes| P15
-
-    P15[Phase 1.5: Skeptic + premortems] --> P2
-    P2[Phase 2: Blind scoring] --> Gate{Margin over 10%?}
-
-    Gate -->|No| Cross[Crossbreed round]
-    Cross --> P2
-    Gate -->|Yes, or plateau, or round 3| P4
-
-    P4[Phase 4: Red-team winner] --> Fatal{Fatal flaw?}
-    Fatal -->|Yes| Runner[Runner-up enters red-team]
-    Runner --> P4
-    Fatal -->|No| Plan{User approves plan}
-    Plan --> P5[Phase 5: Implement + decision record]
-    P5 --> End([Done: matrix + trail + code])
-
-    classDef user fill:#f6c344,stroke:#8a6d1a,color:#1a1a1a
-    classDef mech stroke:#888,stroke-width:1.5px,stroke-dasharray: 4 3
-    class Approve,Plan user
-    class Diverse,Gate,Fatal mech
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="diagrams/pipeline-dark.png">
+  <img alt="Pipeline flow: mode choice, rubric approval, generation, skeptic pass, blind scoring, decision gate, red-team, implement" src="diagrams/pipeline-light.png">
+</picture>
 
 **Reading the diagram: amber nodes are decisions the user makes. Dashed-outline nodes are mechanical gates decided by rules and scores, with no judgment involved. Everything else is the LLM's work.**
 
@@ -187,27 +154,10 @@ One round is the normal case. Extra rounds are not "more thorough", they are a t
 - **Plateau (top score improves < 5% round over round)**: stop, take the leader. Further rounds are churn.
 - **Hard cap**: 3 rounds, no matter what.
 
-```mermaid
-%%{init: {"flowchart": {"htmlLabels": false}, "themeVariables": {"fontFamily": "arial"}}}%%
-flowchart TD
-    Score[Round scored] --> Margin{Margin over 10%?}
-
-    Margin -->|Yes: decisive| One[Red-team winner alone]
-    Margin -->|No: close race| Cap{Round 3, or plateau?}
-
-    Cap -->|No| Cross[Crossbreed and rescore]
-    Cross --> Score
-    Cap -->|Yes: stop| Both[Red-team both finalists]
-
-    Both --> Spike{Spikeable code?}
-    Spike -->|Yes| Spikes[Capped spikes break the tie]
-    Spike -->|No| Impl
-    Spikes --> Impl[Implement]
-    One --> Impl
-
-    classDef mech stroke:#888,stroke-width:1.5px,stroke-dasharray: 4 3
-    class Margin,Cap,Spike mech
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="diagrams/rounds-dark.png">
+  <img alt="Round-count flow: margin over 10 percent ends it, otherwise crossbreed until round 3 or plateau, close races red-team both finalists with optional spikes" src="diagrams/rounds-light.png">
+</picture>
 
 **Every gate in this diagram is mechanical (dashed outline): margins, round caps, and plateau thresholds decide, not judgment.** The user does not appear here at all, with one exception covered in the table above: when the stopped race is a genuine tradeoff, the finalists go to the user with the matrix and the red-team findings, as in the example below.
 

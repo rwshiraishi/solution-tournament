@@ -1,0 +1,19 @@
+%%{init: {"flowchart": {"htmlLabels": false}, "themeVariables": {"fontFamily": "arial"}}}%%
+flowchart TD
+    Score[Round scored] --> Margin{Margin over 10%?}
+
+    Margin -->|Yes: decisive| One[Red-team winner alone]
+    Margin -->|No: close race| Cap{Round 3, or plateau?}
+
+    Cap -->|No| Cross[Crossbreed and rescore]
+    Cross --> Score
+    Cap -->|Yes: stop| Both[Red-team both finalists]
+
+    Both --> Spike{Spikeable code?}
+    Spike -->|Yes| Spikes[Capped spikes break the tie]
+    Spike -->|No| Impl
+    Spikes --> Impl[Implement]
+    One --> Impl
+
+    classDef mech stroke:#888,stroke-width:1.5px,stroke-dasharray: 4 3
+    class Margin,Cap,Spike mech
