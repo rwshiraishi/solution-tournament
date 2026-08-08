@@ -12,6 +12,9 @@ CONTEXT PACK (evidence base): {frozen pack}
 RUBRIC DIMENSIONS (no weights needed): {dimensions}
 CANDIDATES: {for each: label, named structural axis, mechanism 90-150w,
 assumptions, what-breaks-it}
+SURVIVING CANDIDATES' DQ VERDICTS (VERIFIED / PARTIAL / HYPOTHESIS-capped —
+you need these to pre-commit a reachable falsifier in item 4):
+
 REMOVED CANDIDATES (context only — do NOT critique, revise, or verdict these):
 {for each: label, text, the DQ test that removed it}
 
@@ -41,8 +44,11 @@ For EACH candidate, produce:
 4. FILLER VERDICT (only if warranted): no plausible path to winning ANY
    dimension. Support it with a cited pack fact (quote + locator) PLUS a pre-commitment —
    name one SURVIVING candidate's row and the score range this fact's
-   implication ENTAILS there — the range must EXCLUDE at least half the
-   0–10 scale and name the matrix result that would falsify it; a wider
+   implication ENTAILS there. Your range must name a REACHABLE result: the
+   packet lists each surviving candidate's DQ verdict, and on a row marked
+   PARTIAL/HYPOTHESIS-capped you commit to the scorer's ORIGINAL pre-cap
+   value, never to a post-cap number the cap makes impossible. The range
+   must EXCLUDE at least half the 0–10 scale and name the matrix result that would falsify it; a wider
    range makes your verdict UNFALSIFIABLE and it will be discarded — so
    the verdict can later fail against the matrix — OR a dimension-by-dimension argument naming, for each rubric
    dimension, the specific candidate that dominates this one and why — falsifiable against
