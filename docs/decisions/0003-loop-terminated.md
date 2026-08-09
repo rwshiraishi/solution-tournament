@@ -60,3 +60,34 @@ dimension scores are NOT independent — the arithmetic requiring exec 9.54 for 
 weighted is an estimate, not a measurement — and roughly one finding per round across the
 resumed loop was a defect introduced by the previous round's fix. Continuing has a
 measured chance of moving the score down.
+
+## Addendum (2026-08-09): three-grader panel — the stable measurement
+
+After the loop closed, a confirmation round scored 8.9 against round 127's 9.4 on a
+near-identical bundle, exposing that any single-grader number is a draw from a band. A
+three-grader panel was run on one frozen bundle (sha f372e162, includes every fix through
+round 128), median pre-committed as the score before any result arrived.
+
+Grades: A 8.9 · B 8.7 · C 8.8 → **PANEL SCORE 8.8** (median weighted; raw medians 8.75)
+Weighted spread across graders: 0.15 — versus 0.7 across recent single rounds.
+
+Per-dimension medians: exec 8.0 · failure 8.9 · false-security 9.2 · cost 9.0 · scope 8.8
+
+What this establishes:
+- The skill's STABLE quality is ~8.8, not the 9.4 a favorable single draw produced. The
+  9.2-9.4 readings were the top of grader variance, not a level the artifact holds.
+- The panel is far tighter than single rounds (0.15 vs ~0.7 spread), confirming the median
+  of three as the honest instrument for any future measurement.
+- All three graders independently recomputed every arithmetic claim and found ZERO errors —
+  the derivation-not-figures approach has fully held since round 125.
+- All three named cognitive load as the dominant residual, in nearly identical words,
+  quoting the file's own admission. That is the structural ceiling: below ~21.5k words it
+  does not move, and the tournament's own attribution experiment (record 0002) showed the
+  cheap remedies are already taken.
+
+Recurring panel findings not yet addressed (small, recorded for a future session):
+- Phase 2.9 redistribution can zero a dimension without the drop that Phase 0.4 mandates
+- Full mode's published interaction floor of 3 includes a terminal-decision ask no rule
+  mandates on a decisive run
+- The Exit Phase 3 enumeration may omit the spike's changed-lines threshold; the scorer
+  template's DQ status line omits PARTIAL
