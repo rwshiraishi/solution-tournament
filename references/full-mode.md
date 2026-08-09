@@ -31,7 +31,7 @@ Read this file when the mode verdict selects FULL, before Phase 1. Lightweight r
      e. So exactly two conditions terminate the round: no surviving carried anchor, and NOISE > 1.5. Every other unusable-NOISE case falls back to fixed thresholds and continues.
      f. Otherwise every gate below must clear its fixed threshold AND NOISE.
 
-  1. (Pointer only — the terminating conditions live in Rule 0.5 and fire before this list is read; they are deliberately not restated here.)
+  1. This slot is a pointer only: the terminating conditions live in Rule 0.5 and fire before this list is read, so they are deliberately not restated here.
   2. **Plateau test**: no offspring beat the higher-scoring CARRIED anchor (this round's totals) by more than max(0.5, NOISE) → stop; top two by current totals to Phase 4 together. Plateau outranks the decisive gate deliberately: an anchor that only widened its lead over weak offspring the same agent generated has been flattered, not tested.
   3. **Decisive gate**: margin > max(1.0, NOISE + 0.5) → that round's winner alone to Phase 4. The +0.5 keeps the decisive bar strictly above the plateau bar at every NOISE level; without it the two gates converge above NOISE 1.0, and the plateau rule's whole rationale (an anchor flattered by weak offspring has not been tested) lapses in exactly the high-instability rounds where flattery is likeliest.
   4. **Rounds exhausted** (after round 3): top two to Phase 4 together.

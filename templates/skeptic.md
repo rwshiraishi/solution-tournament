@@ -14,6 +14,7 @@ CANDIDATES: {for each: label, named structural axis, mechanism 90-150w,
 assumptions, what-breaks-it}
 SURVIVING CANDIDATES' DQ VERDICTS (VERIFIED / PARTIAL / HYPOTHESIS-capped —
 you need these to pre-commit a reachable falsifier in item 4):
+{surviving_dq_verdicts}
 
 REMOVED CANDIDATES (context only — do NOT critique, revise, or verdict these):
 {for each: label, text, the DQ test that removed it}
