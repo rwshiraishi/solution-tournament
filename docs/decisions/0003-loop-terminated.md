@@ -91,3 +91,33 @@ Recurring panel findings not yet addressed (small, recorded for a future session
   mandates on a decisive run
 - The Exit Phase 3 enumeration may omit the spike's changed-lines threshold; the scorer
   template's DQ status line omits PARTIAL
+
+## Addendum 2 (2026-08-09): second panel after the recurring fixes — 8.9
+
+The three panel-1 findings were fixed (redistribution routes its zeroing case through the
+drop rule; full mode's interaction floor corrected to 2, since a decisive full run has no
+mandated user ask; the spike size ceiling joined the threshold enumeration; the scorer
+template gained PARTIAL). A second three-grader panel ran on the frozen result
+(sha 230ada72), median pre-committed.
+
+Grades: A 8.9 · B 8.9 · C 9.1 → **PANEL SCORE 8.9** (spread 0.20)
+Per-dimension medians vs panel 1: exec 8.4 (+0.4) · failure 9.0 (+0.1) ·
+false-security 9.3 (+0.1) · cost 9.0 (=) · scope 9.4 (+0.6)
+
+The gain is real but modest: +0.1 on the panel median, driven by exec and scope. All
+three graders again recomputed every arithmetic claim and found zero errors, including
+the corrected floor-of-2 sum.
+
+All three graders independently converged on ONE new defect, introduced by the round-128
+fix: Phase 3(2) orders an attended lightweight decisive run to print "every safeguard
+self-administered" while Definitions reserves that exact string for autonomous runs and
+mandates "self-administered EXCEPT the user's checks" for attended ones — a prose-vs-prose
+collision the precedence rule cannot arbitrate, on the commonest attended path. Grader B
+also found the worked round does not demonstrate rule 1.5's cell-provenance printing, and
+grader C that the "every number is a convention" disclaimer under-labels the wc-measured
+counts beneath it.
+
+Standing conclusion: the artifact sits at 8.9 ± 0.1 under panel measurement. Each fix
+round still introduces roughly one collision; the honest expectation is that closing the
+disclosure-string collision buys back its exec cost and little more. The structural
+ceiling (cognitive load, named identically by all six panel graders) remains.
