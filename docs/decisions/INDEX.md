@@ -1,1 +1,2 @@
 - [0002](0002-exec-attribution.md) — what actually caps the executability score: attribution experiment falsifies the density-confession hypothesis; cheapest intervention wins
+- [0003](0003-loop-terminated.md) — blind-assessment loop terminated at 9.4; what moved the score and what was left
