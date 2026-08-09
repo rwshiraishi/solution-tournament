@@ -9,7 +9,7 @@ context. Do not use tools.
 
 PROBLEM: {problem statement}
 RUBRIC (weights frozen): {dimensions with weights}
-DISQUALIFICATION STATUS: {verified-removal already applied | HYPOTHESIS
+DISQUALIFICATION STATUS: {verified-removal already applied | PARTIAL — residual path named, cap applies on return | HYPOTHESIS
 pending — do not name it here: the main agent applies any cap to returned
 scores afterward, so the scorer never learns which candidate is suspected}
 CONTEXT PACK (the only admissible evidence; facts are tagged MEASURED or
