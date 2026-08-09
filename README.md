@@ -258,22 +258,119 @@ Deliberation stays in subagents. Only summaries, the score matrix, and decisions
 
 ## Installation
 
-Copy the skill into your Claude Code skills directory:
+This skill is **five files**, not one. `SKILL.md` references `references/full-mode.md` thirteen times and each template once, so copying only `SKILL.md` gives you a skill whose full mode points at files that do not exist.
 
-```bash
-mkdir -p ~/.claude/skills/solution-tournament
-curl -o ~/.claude/skills/solution-tournament/SKILL.md \
-  https://raw.githubusercontent.com/rwshiraishi/solution-tournament/main/SKILL.md
+```
+solution-tournament/
+├── SKILL.md                  # required: the shared spine both modes execute
+├── references/
+│   └── full-mode.md          # crossbreed rules, spike gate, call ceiling, worked example
+└── templates/
+    ├── scorer.md             # spawn prompts for the full-mode subagents
+    ├── skeptic.md
+    └── red-team.md
 ```
 
-Or clone and symlink:
+### Claude Code
+
+Clone the whole directory into one of two locations:
 
 ```bash
-git clone https://github.com/rwshiraishi/solution-tournament.git
-ln -s "$(pwd)/solution-tournament" ~/.claude/skills/solution-tournament
+# Personal: available in every project
+git clone https://github.com/rwshiraishi/solution-tournament.git \
+  ~/.claude/skills/solution-tournament
+
+# Project: committed to the repo, shared with everyone who clones it
+git clone https://github.com/rwshiraishi/solution-tournament.git \
+  .claude/skills/solution-tournament
 ```
 
-Claude Code picks it up automatically. Invoke it with `/solution-tournament`, or just describe a problem worth competing over.
+Claude Code watches these directories and picks up the skill **within the current session**, no restart needed. The one exception: if you created the top-level `skills/` directory for the first time, restart once. If the same skill name exists at several levels, enterprise beats personal beats project.
+
+Invoke it explicitly with `/solution-tournament`, or just describe a problem and let the trigger conditions in the frontmatter fire. ([Claude Code skills docs](https://code.claude.com/docs/en/skills))
+
+**Verify the install:**
+
+```bash
+ls ~/.claude/skills/solution-tournament/{SKILL.md,references/full-mode.md,templates/}
+```
+
+### Claude Code plugin (for teams)
+
+To distribute it to a team as a managed, updatable bundle, add a `.claude-plugin/plugin.json` and publish the repo as a marketplace:
+
+```bash
+/plugin marketplace add rwshiraishi/solution-tournament
+/plugin install solution-tournament@solution-tournament
+```
+
+Plugin skills are namespaced (`/plugin-name:solution-tournament`), so they never collide with a personal or project copy. Validate a manifest before shipping with `claude plugin validate . --strict`. ([Plugins reference](https://code.claude.com/docs/en/plugins-reference))
+
+### claude.ai, Claude Desktop, Cowork, and cloud sessions
+
+These **do not read `~/.claude/skills/` on your machine.** Cowork and cloud sessions load the skills enabled for your claude.ai account, synced at session start. Manage them under **Customize** in the Desktop sidebar or in claude.ai skills settings. Cloud sessions additionally load project skills committed to the cloned repo's `.claude/skills/`.
+
+One compatibility note that bites here: claude.ai uploads and the Skills API accept only `name`, `description`, `license`, `compatibility`, `metadata`, and `allowed-tools` in frontmatter. Any Claude Code specific field (`argument-hint`, `disable-model-invocation`, `context: fork`, …) is rejected with an "Unexpected key(s)" error. This skill's frontmatter uses only `name` and `description`, so it uploads unchanged.
+
+### Claude API / Agent SDK
+
+Skills run through the **code execution tool**. Upload the directory via the Skills API (`/v1/skills`) to get a `skill_id`, then reference it in the `container` parameter, up to 8 skills per request:
+
+```python
+container={"skills": [{"type": "custom", "skill_id": "skill_...", "version": "latest"}]}
+betas=["skills-2025-10-02", "files-api-2025-04-14"]
+```
+
+Pin a specific `version` for stability, and keep the skills list identical across requests, since changing it breaks the prompt cache. ([Skills API guide](https://platform.claude.com/docs/en/build-with-claude/skills-guide))
+
+## Using it outside Claude
+
+`SKILL.md` is an [open standard](https://agentskills.io), originally developed by Anthropic, released openly, and now implemented by 40+ agents. **This skill is portable, and the format needs no translation.** What changes is the install path and the invocation syntax.
+
+### OpenAI Codex
+
+Codex implements the same standard, so the same five files work as-is:
+
+```bash
+# User scope: available everywhere
+git clone https://github.com/rwshiraishi/solution-tournament.git \
+  ~/.agents/skills/solution-tournament
+
+# Repo scope: Codex scans .agents/skills from cwd up to the repo root
+git clone https://github.com/rwshiraishi/solution-tournament.git \
+  .agents/skills/solution-tournament
+```
+
+Invoke with `/skills`, or type `$solution-tournament`. Implicit invocation from the `description` works too, and can be disabled per-skill via `allow_implicit_invocation: false` in an optional `agents/openai.yaml`. Disable a skill without deleting it in `~/.codex/config.toml`:
+
+```toml
+[[skills.config]]
+path = "/path/to/solution-tournament/SKILL.md"
+enabled = false
+```
+
+**Full mode works in Codex**, because Codex supports subagents. Define them as TOML files under `~/.codex/agents/` or `.codex/agents/`. Note that Codex only spawns subagents when explicitly asked, so say so when starting a full-mode run. ([Codex skills](https://developers.openai.com/codex/skills/) · [Codex subagents](https://developers.openai.com/codex/subagents))
+
+### Other agents implementing the standard
+
+Cursor, GitHub Copilot and VS Code, Gemini CLI, OpenCode, Goose, Amp, Roo Code, Kiro, Factory, OpenHands, JetBrains Junie, and others all read `SKILL.md`. Check each client's docs for its skills directory. The [client showcase](https://agentskills.io/clients) links them. The file itself does not change.
+
+### What degrades where, honestly
+
+The tournament's rigor comes from capabilities the host either has or doesn't. Where one is missing, the skill does not silently pretend. It has explicit branches for each case, but you should know which you are getting.
+
+| Host capability | Needed for | Without it |
+|---|---|---|
+| **Subagent spawning** | Full mode: independent skeptic, blind scorers, red-team, implementation reviewer | Lightweight only. One agent self-scores, self-skeptics, self-red-teams. The output says so on every run. |
+| **Shell / command execution** | The evidence floor: pack hashing, re-running a MEASURED fact in session | The no-execution-tool branch fires: prints `hash unavailable`, records zero re-runnable facts, and every decisive gate fails to NO WINNER rather than fabricating a value. |
+| **A reachable user** | Rubric checkpoint, verbatim field + objection route, close-pair decisions | Autonomous mode. Most branches end in NO WINNER by design, so the honest headline becomes "compare and report", not "compare and implement". |
+| **File writes** | Pack file, decision record in `docs/decisions/` | Record content goes to session output with a note that there is nowhere durable to write it. |
+
+The short version: **any standards-compliant agent can run lightweight mode**; full mode needs subagents; and the evidence floor needs a shell. An agent with none of the three still runs the process, but you are getting a structured comparison rather than a verified decision, and the run will tell you that in its own output.
+
+### Cost before you install
+
+Loading the skill costs tokens before a single candidate exists. Lightweight loads `SKILL.md` only (~27–39k tokens); full mode adds the reference and templates (~32–46k). The skill prices this itself and includes a skip floor that tells you when *not* to run it: one or two files, under ~100 changed lines, an existing test, no failed prior attempt. Read that section before adopting it broadly.
 
 ## Related skills
 
