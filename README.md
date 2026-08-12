@@ -370,7 +370,7 @@ The short version: **any standards-compliant agent can run lightweight mode**; f
 
 ### Cost before you install
 
-Loading the skill costs tokens before a single candidate exists. Lightweight loads `SKILL.md` only (~27–39k tokens); full mode adds the reference and templates (~32–46k). The skill prices this itself and includes a skip floor that tells you when *not* to run it: one or two files, under ~100 changed lines, an existing test, no failed prior attempt. Read that section before adopting it broadly.
+Loading the skill costs tokens before a single candidate exists. Lightweight loads `SKILL.md` plus `references/lightweight-mode.md` (~19–27k tokens); full mode loads `SKILL.md` plus `references/full-mode.md` (~24–35k) and the templates at spawn time. The skill prices this itself and includes a skip floor that tells you when *not* to run it: one or two files, under ~100 changed lines, an existing test, no failed prior attempt. Read that section before adopting it broadly.
 
 ## Related skills
 
