@@ -94,6 +94,30 @@ class TestStrikes(unittest.TestCase):
         self.assertEqual(strikes(ok), [])
 
 
+class TestReviewerRegressions(unittest.TestCase):
+    """Cases from the 2026-08-13 python-review findings."""
+
+    def test_sweep_as_last_line_without_trailing_newline(self) -> None:
+        # HIGH: text.find("\n") == -1 used to truncate the final char,
+        # producing a false "missing threshold name" strike.
+        reordered = PASSING_LIGHTWEIGHT.splitlines()
+        sweep = next(l for l in reordered if l.startswith("near-miss sweep"))
+        rest = [l for l in reordered if not l.startswith("near-miss sweep")]
+        text = "\n".join(rest + [sweep])  # sweep last, no trailing newline
+        self.assertEqual(strikes(text), [])
+
+    def test_malformed_weight_value_strikes_instead_of_crashing(self) -> None:
+        # HIGH: "0.3.5" used to crash float() with an uncaught ValueError.
+        bad = PASSING_LIGHTWEIGHT.replace("robustness 0.25", "robustness 0.2.5")
+        found = strikes(bad)  # must not raise
+        self.assertTrue(any("malformed weights line" in s for s in found), found)
+
+    def test_malformed_matrix_score_strikes_instead_of_crashing(self) -> None:
+        bad = PASSING_LIGHTWEIGHT.replace("root-cause=7 ", "root-cause=7.0.1 ")
+        found = strikes(bad)  # must not raise
+        self.assertTrue(any("missing dimensions" in s for s in found), found)
+
+
 class TestFullMode(unittest.TestCase):
     def test_full_requires_gate_order_diff(self) -> None:
         full = PASSING_LIGHTWEIGHT.replace("mode: lightweight", "mode: full").replace(

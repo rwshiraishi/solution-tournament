@@ -62,7 +62,7 @@ def block(text: str, name: str) -> str:
     return m.group(1) if m else ""
 
 
-def check_meta(text: str, strikes: list) -> tuple:
+def check_meta(text: str, strikes: list[str]) -> tuple[str, str]:
     meta = block(text, "meta")
     if not meta:
         strikes.append("st:meta block absent")
@@ -76,22 +76,27 @@ def check_meta(text: str, strikes: list) -> tuple:
     return mode, shape
 
 
-def check_weights(text: str, strikes: list) -> dict:
+def check_weights(text: str, strikes: list[str]) -> dict[str, float]:
     raw = block(text, "weights")
     if not raw:
         strikes.append("st:weights block absent")
         return {}
-    weights = {}
+    weights: dict[str, float] = {}
     for line in raw.strip().splitlines():
-        m = re.match(r"([\w][\w /-]*?)\s+([\d.]+)$", line.strip())
+        line = line.strip()
+        if not line:
+            continue
+        m = re.match(r"([A-Za-z][A-Za-z /_-]*?)\s+(\d+(?:\.\d+)?)$", line)
         if m:
             weights[m.group(1)] = float(m.group(2))
+        else:
+            strikes.append(f"malformed weights line: {line!r}")
     if weights and abs(sum(weights.values()) - 1.0) > WEIGHT_TOLERANCE:
         strikes.append(f"weights sum to {sum(weights.values()):.3f}, not 1.0")
     return weights
 
 
-def check_matrix(text: str, weights: dict, strikes: list) -> None:
+def check_matrix(text: str, weights: dict[str, float], strikes: list[str]) -> None:
     raw = block(text, "matrix")
     if not raw:
         strikes.append("st:matrix block absent")
@@ -102,8 +107,8 @@ def check_matrix(text: str, weights: dict, strikes: list) -> None:
             strikes.append(f"matrix row malformed: {line!r}")
             continue
         name, scores_raw, total_raw = parts
-        scores = dict(re.findall(r"([\w/-]+)=([\d.]+)", scores_raw))
-        m = re.search(r"total=([\d.]+)", total_raw)
+        scores = dict(re.findall(r"([\w/-]+)=(\d+(?:\.\d+)?)(?=\s|$)", scores_raw))
+        m = re.search(r"total=(\d+(?:\.\d+)?)$", total_raw.strip())
         if not m:
             strikes.append(f"matrix row {name}: no total")
             continue
@@ -120,7 +125,7 @@ def check_matrix(text: str, weights: dict, strikes: list) -> None:
             )
 
 
-def check_pack_hash(text: str, strikes: list) -> None:
+def check_pack_hash(text: str, strikes: list[str]) -> None:
     if re.search(r"pack-v\d+ sha256 [0-9a-f]{64}", text):
         return
     if NO_EXEC_HASH_LINE in text:
@@ -128,21 +133,22 @@ def check_pack_hash(text: str, strikes: list) -> None:
     strikes.append("no pack hash line (pack-vN sha256 <hex64>) and no no-execution-tool fallback line")
 
 
-def check_sweep(text: str, mode: str, strikes: list) -> None:
+def check_sweep(text: str, mode: str, strikes: list[str]) -> None:
     m = re.search(r"near-miss sweep:\s*(\d+) of (\d+) thresholds evaluated", text)
     if not m:
         strikes.append("near-miss sweep line absent or malformed")
         return
-    if m.group(1) != m.group(2):
+    if int(m.group(1)) != int(m.group(2)):
         strikes.append(f"near-miss sweep evaluated {m.group(1)} of {m.group(2)} — incomplete")
     names = LIGHTWEIGHT_SWEEP_NAMES if mode == "lightweight" else FULL_SWEEP_NAMES
-    line = text[m.start():text.find("\n", m.start())]
+    line_end = text.find("\n", m.start())
+    line = text[m.start():line_end if line_end != -1 else len(text)]
     for name in names:
         if name not in line:
             strikes.append(f"near-miss sweep line missing threshold name: {name}")
 
 
-def check_counters(text: str, mode: str, strikes: list) -> None:
+def check_counters(text: str, mode: str, strikes: list[str]) -> None:
     m = re.search(r"^counters:.*$", text, re.M)
     if not m:
         strikes.append("counters ledger final line absent")
@@ -156,7 +162,7 @@ def check_counters(text: str, mode: str, strikes: list) -> None:
             strikes.append(f"counters line missing counter: {name}")
 
 
-def check_checklist(text: str, mode: str, strikes: list) -> None:
+def check_checklist(text: str, mode: str, strikes: list[str]) -> None:
     m = re.search(r"^checklist:(.+)$", text, re.M)
     if not m:
         strikes.append("checklist line absent")
@@ -178,25 +184,25 @@ def check_checklist(text: str, mode: str, strikes: list) -> None:
                 strikes.append(f"checklist phase below denominator: {got} of {want}")
 
 
-def check_gate_order(text: str, mode: str, strikes: list) -> None:
+def check_gate_order(text: str, mode: str, strikes: list[str]) -> None:
     if mode != "full":
         return
     m = re.search(r"gate-order diff:\s*(\d+) ticks / (\d+) artifact IDs matched", text)
     if not m:
         strikes.append("gate-order diff line absent (full mode)")
         return
-    if m.group(1) != m.group(2):
+    if int(m.group(1)) != int(m.group(2)):
         strikes.append(f"gate-order diff mismatch: {m.group(1)} ticks vs {m.group(2)} artifact IDs")
 
 
-def check_disclosure(text: str, shape: str, strikes: list) -> None:
+def check_disclosure(text: str, shape: str, strikes: list[str]) -> None:
     expected = DISCLOSURE_BY_SHAPE.get(shape)
     if expected and expected not in text:
         strikes.append(f"disclosure line for run shape {shape} absent: expected {expected!r}")
 
 
-def validate(text: str, mode_override: str = "") -> list:
-    strikes: list = []
+def validate(text: str, mode_override: str = "") -> list[str]:
+    strikes: list[str] = []
     mode, shape = check_meta(text, strikes)
     mode = mode_override or mode
     if mode not in ("lightweight", "full"):

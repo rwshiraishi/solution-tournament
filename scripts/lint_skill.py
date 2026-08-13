@@ -43,33 +43,33 @@ def strip_nested_parens(text: str) -> str:
     return "".join(out)
 
 
-def check_files_exist(root: pathlib.Path, findings: list) -> None:
+def check_files_exist(root: pathlib.Path, findings: list[str]) -> None:
     for rel in ("SKILL.md", *MODE_FILES, *TEMPLATE_FILES, "scripts/cross_model_score.py"):
         if not (root / rel).is_file():
             findings.append(f"missing file: {rel}")
 
 
-def check_mentioned_paths(root: pathlib.Path, findings: list) -> None:
+def check_mentioned_paths(root: pathlib.Path, findings: list[str]) -> None:
     for md in ("SKILL.md", *MODE_FILES):
-        text = (root / md).read_text()
+        text = (root / md).read_text(encoding="utf-8")
         for rel in re.findall(r"(?:references|templates|scripts)/[A-Za-z0-9_-]+\.(?:md|py)", text):
             if not (root / rel).is_file():
                 findings.append(f"{md} mentions {rel} which does not exist")
 
 
-def check_mode_read_timing(root: pathlib.Path, findings: list) -> None:
-    skill = (root / "SKILL.md").read_text()
+def check_mode_read_timing(root: pathlib.Path, findings: list[str]) -> None:
+    skill = (root / "SKILL.md").read_text(encoding="utf-8")
     for rel in MODE_FILES:
         name = pathlib.Path(rel).name
         if f"`references/{name}` — read it BEFORE Phase 0" not in skill:
             findings.append(f"SKILL.md no longer mandates reading {name} before Phase 0")
-        header = (root / rel).read_text()[:600]
+        header = (root / rel).read_text(encoding="utf-8")[:600]
         if "before Phase 0" not in header:
             findings.append(f"{rel} header timing disagrees with SKILL.md (must say before Phase 0)")
 
 
-def check_full_table(root: pathlib.Path, findings: list) -> None:
-    text = (root / "references/full-mode.md").read_text()
+def check_full_table(root: pathlib.Path, findings: list[str]) -> None:
+    text = (root / "references/full-mode.md").read_text(encoding="utf-8")
     rows = re.findall(r"^\| (0|1|1\.5|2|3|4|5) \| (\d+) \|", text, re.M)
     if not rows:
         findings.append("full-mode.md checklist table not found")
@@ -86,8 +86,8 @@ def check_full_table(root: pathlib.Path, findings: list) -> None:
             )
 
 
-def check_lightweight_boxes(root: pathlib.Path, findings: list) -> None:
-    text = (root / "references/lightweight-mode.md").read_text()
+def check_lightweight_boxes(root: pathlib.Path, findings: list[str]) -> None:
+    text = (root / "references/lightweight-mode.md").read_text(encoding="utf-8")
     try:
         section = text.split("## Consolidated checklist")[1].split("## Interaction budget")[0]
     except IndexError:
@@ -103,9 +103,9 @@ def check_lightweight_boxes(root: pathlib.Path, findings: list) -> None:
                 findings.append(f"full-only threshold '{name}' appears as printable in lightweight box list")
 
 
-def check_call_sum(root: pathlib.Path, findings: list) -> None:
-    text = (root / "references/full-mode.md").read_text()
-    m = re.search(r"Total: ([\d+]+) = (\d+)", text)
+def check_call_sum(root: pathlib.Path, findings: list[str]) -> None:
+    text = (root / "references/full-mode.md").read_text(encoding="utf-8")
+    m = re.search(r"Total: (\d+(?:\+\d+)*) = (\d+)", text)
     if not m:
         findings.append("18-call sum line not found in full-mode.md")
         return
@@ -115,8 +115,8 @@ def check_call_sum(root: pathlib.Path, findings: list) -> None:
         findings.append(f"call ceiling arithmetic broken: {m.group(1)} = {sum(parts)}, stated {stated}, expected {CALL_CEILING}")
 
 
-def check_weights(root: pathlib.Path, findings: list) -> None:
-    text = (root / "SKILL.md").read_text()
+def check_weights(root: pathlib.Path, findings: list[str]) -> None:
+    text = (root / "SKILL.md").read_text(encoding="utf-8")
     m = re.search(r"root-cause resolution (\d+)%.*?robustness[^ ]* (\d+)%.*?maintainability[^ ]* (\d+)%.*?performance/cost (\d+)%.*?risk/reversibility (\d+)%", text)
     if not m:
         findings.append("default weights sentence not found in SKILL.md")
@@ -125,8 +125,8 @@ def check_weights(root: pathlib.Path, findings: list) -> None:
         findings.append(f"default weights sum to {sum(int(g) for g in m.groups())}%, expected 100%")
 
 
-def check_size_claims(root: pathlib.Path, findings: list) -> None:
-    skill = (root / "SKILL.md").read_text()
+def check_size_claims(root: pathlib.Path, findings: list[str]) -> None:
+    skill = (root / "SKILL.md").read_text(encoding="utf-8")
     claims = {
         "SKILL.md": r"this file \(~([\d.]+)k words / ([\d.]+)k chars\)",
         "references/lightweight-mode.md": r"lightweight-mode\.md` \(~([\d.]+)k words / ([\d.]+)k chars\)",
@@ -138,7 +138,10 @@ def check_size_claims(root: pathlib.Path, findings: list) -> None:
             findings.append(f"size claim for {rel} not found in SKILL.md Cost section")
             continue
         stated_chars = float(m.group(2)) * 1000
-        actual = len((root / rel).read_text().encode("utf-8"))
+        actual = len((root / rel).read_text(encoding="utf-8").encode("utf-8"))
+        if actual == 0:
+            findings.append(f"{rel} is empty")
+            continue
         if abs(actual - stated_chars) / actual > SIZE_TOLERANCE:
             findings.append(
                 f"size claim drift for {rel}: stated ~{int(stated_chars)} chars, actual {actual} "
@@ -146,32 +149,35 @@ def check_size_claims(root: pathlib.Path, findings: list) -> None:
             )
 
 
-def check_readme_line_claim(root: pathlib.Path, readme: pathlib.Path, findings: list) -> None:
+def check_readme_line_claim(root: pathlib.Path, readme: pathlib.Path, findings: list[str]) -> None:
     if not readme.is_file():
         findings.append(f"README not found at {readme}")
         return
-    m = re.search(r"~(\d+)-line stdlib-only transport", readme.read_text())
+    m = re.search(r"~(\d+)-line stdlib-only transport", readme.read_text(encoding="utf-8"))
     if not m:
         findings.append("README line-count claim for the transport script not found")
         return
     stated = int(m.group(1))
-    actual = len((root / "scripts/cross_model_score.py").read_text().splitlines())
+    actual = len((root / "scripts/cross_model_score.py").read_text(encoding="utf-8").splitlines())
+    if actual == 0:
+        findings.append("cross_model_score.py is empty")
+        return
     if abs(actual - stated) / actual > LINE_CLAIM_TOLERANCE:
         findings.append(f"README line-count claim stale: stated ~{stated}, actual {actual}")
 
 
-def check_secrets(root: pathlib.Path, readme: pathlib.Path, findings: list) -> None:
+def check_secrets(root: pathlib.Path, readme: pathlib.Path, findings: list[str]) -> None:
     paths = [root / "SKILL.md", *(root / f for f in MODE_FILES), *(root / f for f in TEMPLATE_FILES)]
     paths += list((root / "scripts").glob("*.py"))
     if readme.is_file():
         paths.append(readme)
     for p in paths:
-        if SECRET_PATTERN.search(p.read_text()):
+        if SECRET_PATTERN.search(p.read_text(encoding="utf-8")):
             findings.append(f"possible secret material in {p.name}")
 
 
-def lint(root: pathlib.Path, readme: pathlib.Path) -> list:
-    findings: list = []
+def lint(root: pathlib.Path, readme: pathlib.Path) -> list[str]:
+    findings: list[str] = []
     check_files_exist(root, findings)
     if findings:
         return findings
