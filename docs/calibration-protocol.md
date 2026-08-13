@@ -13,6 +13,7 @@ Every threshold in the skill is a labeled convention, and the benefit side of it
 | # | Date | Mode | Problem (one line) | Pre-reg matched winner? | Terminal branch | Near-misses | NO WINNER? | Did any safeguard change the outcome? (which) | Record |
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | 2026-08-08 | full | diagram sync strategy for this repo | — | decisive | — | no | filler early-exit bug caught; long-shot slot rule tightened | docs/decisions/0001-diagram-sync.md |
+| 2 | 2026-08-13 | lightweight (attended) | background-subagent report delivery (ECC) | NO — pre-registered A finished 3rd (capped) | close pair, user composed D+C | 1 surfaced (margin exactly at gate), 2 recorded | no | YES — DQ/PARTIAL cap demoted the pre-registered favorite; the field-ceiling question added the eventual winner D via reopen; the implemented fix recovered a lost 9-finding report during its acceptance test | docs/decisions/0004-subagent-report-delivery.md |
 
 ## Decision gates this data feeds
 

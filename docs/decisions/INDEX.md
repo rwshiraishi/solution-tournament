@@ -1,2 +1,3 @@
 - [0002](0002-exec-attribution.md) — what actually caps the executability score: attribution experiment falsifies the density-confession hypothesis; cheapest intervention wins
 - [0003](0003-loop-terminated.md) — blind-assessment loop terminated at 9.4; what moved the score and what was left
+- [0004](0004-subagent-report-delivery.md) — background-subagent report delivery: close pair D/C at margin exactly 1.00; user composed D+C; harvest recovered a lost 9-finding report during acceptance
