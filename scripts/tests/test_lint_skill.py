@@ -17,7 +17,7 @@ sys.path.insert(0, str(SCRIPTS_DIR))
 import lint_skill  # noqa: E402
 
 SKILL_ROOT = SCRIPTS_DIR.parent
-REPO_README = pathlib.Path.home() / "dev/solution-tournament/README.md"
+REPO_README = pathlib.Path.home() / "dev/tools/solution-tournament/README.md"
 
 
 def run_lint(root: pathlib.Path, readme: pathlib.Path) -> list:

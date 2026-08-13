@@ -49,7 +49,7 @@ For EACH candidate, produce:
    packet lists each surviving candidate's DQ verdict, and on a row marked
    PARTIAL/HYPOTHESIS-capped you commit to the scorer's ORIGINAL pre-cap
    value, never to a post-cap number the cap makes impossible. The range
-   must EXCLUDE at least half the 0–10 scale and name the matrix result that would falsify it; a wider
+   must EXCLUDE at least half the 0–10 scale (committed range width ≤ 5.0) and name the matrix result that would falsify it; a wider
    range makes your verdict UNFALSIFIABLE and it will be discarded — so
    the verdict can later fail against the matrix — OR a dimension-by-dimension argument naming, for each rubric
    dimension, the specific candidate that dominates this one and why — falsifiable against
