@@ -258,13 +258,42 @@ Deliberation stays in subagents. Only summaries, the score matrix, and decisions
 
 ## Installation
 
-This skill is **five files**, not one. `SKILL.md` references `references/full-mode.md` thirteen times and each template once, so copying only `SKILL.md` gives you a skill whose full mode points at files that do not exist.
+This skill is **seven files**, not one: `SKILL.md`, two mode references (`references/lightweight-mode.md`, `references/full-mode.md`), three templates, and one optional script. `SKILL.md` references the mode files throughout — lightweight mode reads its reference before Phase 0 and full mode reads its own — so copying only `SKILL.md` gives you a skill whose rules point at files that do not exist.
+
+### Configuring cross-model scoring (optional)
+
+Full mode can send one scorer slot to a non-Anthropic model (`references/full-mode.md`, "Cross-model scoring"). Nothing is required for the skill to work — without this configuration it falls through to a Claude scorer and says so in the matrix. To enable the CROSS-VENDOR tier:
+
+1. **API key.** Export `OPENAI_API_KEY` in the environment the agent runs in (e.g. your `~/.zshrc`). The key is read from the environment at call time only — it is never written into the skill files, the scorer packet, the matrix, or the decision record, and never passed on a command line.
+
+2. **Model name.** Export `ST_CROSS_MODEL` with the OpenAI model you want on scoring duty (or pass `--model` per call). The script deliberately ships with **no default model** — a baked-in name would rot, and a wrong guess would fail mid-tournament.
+
+   ```bash
+   export OPENAI_API_KEY="<your key>"     # or wherever your shell already sets it
+   export ST_CROSS_MODEL="<model name>"   # e.g. the current GPT flagship or mini tier
+   ```
+
+3. **Verify the setup** (no tokens spent — errors are free):
+
+   ```bash
+   echo "ping" > /tmp/st-pkt.txt
+   python3 scripts/cross_model_score.py /tmp/st-pkt.txt --model "$ST_CROSS_MODEL"
+   ```
+
+   A completion printed to stdout means you are configured. Exit codes if not: `2` key missing, `3` network/HTTP error (a 404 body naming the model means the key works but the model name is wrong; a 401 means the key is bad), `4` unexpected response shape, `5` usage error (no model named, unreadable packet, bad flag). The skill's fallback rule branches on exactly these codes: any nonzero gets one retry, then the slot falls through to a Claude scorer with the downgrade printed.
+
+4. **Different vendor?** The script is a ~100-line stdlib-only transport hardcoded to OpenAI's chat completions endpoint. Pointing it at another OpenAI-compatible endpoint means editing `API_URL` in `scripts/cross_model_score.py`; a non-compatible vendor needs its own transport with the same exit-code contract (0/2/3/4/5) — that contract, not the vendor, is what the skill depends on.
+
+The CROSS-TIER fallback (a different Claude model for the scorer subagent, in-session) needs no configuration at all — it uses the host's own model override and is labeled in the matrix as same-lineage, partial independence.
 
 ```
 solution-tournament/
 ├── SKILL.md                  # required: the shared spine both modes execute
 ├── references/
-│   └── full-mode.md          # crossbreed rules, spike gate, call ceiling, worked example
+│   ├── lightweight-mode.md   # lightweight adaptations, 15-box inventory, budgets
+│   └── full-mode.md          # crossbreed rules, spike gate, call ceiling, ledgers, worked example
+├── scripts/
+│   └── cross_model_score.py  # optional: CROSS-VENDOR scorer transport (stdlib-only)
 └── templates/
     ├── scorer.md             # spawn prompts for the full-mode subagents
     ├── skeptic.md
@@ -292,7 +321,7 @@ Invoke it explicitly with `/solution-tournament`, or just describe a problem and
 **Verify the install:**
 
 ```bash
-ls ~/.claude/skills/solution-tournament/{SKILL.md,references/full-mode.md,templates/}
+ls ~/.claude/skills/solution-tournament/{SKILL.md,references/lightweight-mode.md,references/full-mode.md,scripts/cross_model_score.py,templates/}
 ```
 
 ### Claude Code plugin (for teams)
@@ -329,7 +358,7 @@ Pin a specific `version` for stability, and keep the skills list identical acros
 
 ### OpenAI Codex
 
-Codex implements the same standard, so the same five files work as-is:
+Codex implements the same standard, so the same seven files work as-is (the cross-model script included, since it is invoked with plain `python3`, not a Claude Code feature — only the CROSS-TIER fallback is Claude Code specific):
 
 ```bash
 # User scope: available everywhere
