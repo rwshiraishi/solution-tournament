@@ -51,7 +51,7 @@ Every box prints in EVERY run; a conditional sub-part that does not apply prints
 1. pack file + tagged facts + printed hash
 2. problem restatement + pre-registration sentence
 3. normalized weights + provenance line
-4. DQ falsifiable test + per-candidate verdicts (including any DQ pre-commitment row+range)
+4. DQ falsifiable test + per-candidate verdicts (including any DQ pre-commitment row+range, and the execution-bar demonstration with verbatim output when any VERIFIED verdict stood)
 5. mode verdict incl. user reachability + cap-inheritor line
 6. candidates with named axes, mechanisms, premortems
 7. verbatim field shown (or in record)
