@@ -22,7 +22,7 @@ Generate → score → (full mode: crossbreed) → implement. The goal is a prod
 | 5 | CORRELATED SCORER ERROR — same-model scorers wrong in the same direction: zero spread, no flag | Optional cross-model scorer (full-mode.md): CROSS-VENDOR when a key + model are available, CROSS-TIER otherwise (same-model remains the baseline; scorer tier-downgrades are permitted and printed) — partial, since both read the same single-authored pack. Wider than scoring: the skeptic and red-team are single agents with zero redundancy — accepted in writing because duplicating them doubles cost while sharing priors. Spikes and the user's read remain the only fully external checks |
 | 6 | SPIKE CONSTRUCTION AND REPORTING — the builder chooses how hard to try AND transcribes the result; spikes outrank the matrix | criteria written for both before either is built; red-team audits construction; raw command + verbatim output in the record |
 | 7 | MODE SELECTION — lightweight disables more safeguards in one self-assessed sentence than most channels combined | mode verdict artifact (Calibration) |
-| 8 | FIELD CEILING — nothing here can see an approach never generated | the field-ceiling question, both modes |
+| 8 | FIELD CEILING — nothing here can see an approach never generated | the field-ceiling question, both modes; `novelty-hunt` as the pre-Phase-1 generator when the obvious space is exhausted |
 | 9 | PACKET INTEGRITY — subagents are ASKED not to use tools; nothing sandboxes them | citation striking catches fabricated citations only; red-team Part 0.2 asks whether rationale references material absent from the pack |
 
 DISPUTED detects divergence, never shared error: a zero-spread cell is uncontradicted, not corroborated.
@@ -94,7 +94,7 @@ Order is mandatory: pack → rubric → checkpoint → generation. Criteria or e
 
 ## Phase 1: Divergent generation (n per mode)
 
-- Each candidate differs from every other on a **named structural axis** (architecture, data model, dependency, algorithm class, where-the-logic-lives). Slot #1 is the obvious approach, named as such. At least one credible long shot — test: could it plausibly win one rubric dimension outright? A field of paraphrases is a failed generation: regenerate once; fewer than n distinct axes → run with what exists (minimum 2), saying so; fewer than 2 credible axes → NOT tournamentable: exit under the skip floor with the reason printed, generating no field.
+- Each candidate differs from every other on a **named structural axis** (architecture, data model, dependency, algorithm class, where-the-logic-lives). Slot #1 is the obvious approach, named as such. At least one credible long shot — test: could it plausibly win one rubric dimension outright? A field of paraphrases is a failed generation: regenerate once (the `novelty-hunt` skill is the stronger regenerator when the obvious space is exhausted — see Related skills); fewer than n distinct axes → run with what exists (minimum 2), saying so; fewer than 2 credible axes → NOT tournamentable: exit under the skip floor with the reason printed, generating no field.
 - Per candidate: mechanism, what it assumes, what breaks it — **90–150 words each**. "What breaks it" names a rung on the fixed severity ladder — data loss / correctness / performance / effort — so severity is comparable, not rhetorical.
 - **Candidate hashes** (RECORD-BINDING; SAC): when the field freezes at the end of Phase 1.5 (post-revision, post-removal), print each survivor's mechanism-text SHA-256 beside its label. The same hashes appear in the scorer packet, the verbatim field shown to the user, and the decision record. This helps the user hold one version of the text — framing (channel 1) has the user as its only real detector.
 - Cross-advocacy pass: full mode only (full-mode.md).
@@ -219,7 +219,9 @@ Every NO WINNER exit hands the caller: the field (all candidates verbatim), the 
 ## Related skills
 
 - `council` — one-line test: if the deliverable is a chosen implementation, tournament; if it is a direction or go/no-go, council.
+- `novelty-hunt` — generation front-end: when the Phase 1 field feels conventional, or the field-ceiling question names a credible absent approach, run novelty-hunt to produce a diverse axis-labeled field, then feed it here for production scoring. Declare novelty as a Phase 0 rubric dimension if originality should count.
 - `architecture-decision-records` — the Phase 5 record follows ADR conventions.
 - `tech-stack-evaluator` — when candidates are technology choices rather than implementations.
+- `novelty-hunt` — when the FIELD itself is the problem: the obvious approaches are exhausted, generation keeps producing paraphrases, or the field-ceiling question keeps naming absent approaches. Run it BEFORE Phase 1 to stock the field with genuinely original candidates, then tournament the survivors here. Novelty-hunt scores originality; this skill scores production fitness — one feeds the other, they do not substitute.
 - `verification-loop` — run after Phase 5 before calling the winner done.
 - Cheaper neighbors: one artifact needing critique → a single adversarial review; a hard tradeoff with no buildable candidates → `hard-call`; testing an existing system's limits → stress testing. The tournament earns its cost only when genuinely different implementations must compete.

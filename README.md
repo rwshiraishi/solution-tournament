@@ -422,6 +422,7 @@ Works well alongside:
 - **council**: four-voice structured disagreement for directional strategy calls. Use the tournament when candidates are concrete implementations to score; use council when the decision is a judgment call.
 - **architecture-decision-records**: the Phase 5 decision record follows ADR conventions.
 - **tech-stack-evaluator**: when the "solutions" are technology choices (framework, database, cloud) rather than implementation approaches.
+- **novelty-hunt**: the field-ceiling counterpart. The tournament's one structural blind spot is that it can only rank candidates somebody generated; novelty-hunt searches the solution space for genuinely original ones and scores them for novelty-and-effectiveness. Run it before Phase 1 when the obvious approaches are exhausted or generation keeps producing paraphrases, then feed its survivors into the tournament: novelty-hunt scores originality, the tournament scores production fitness.
 - **verification-loop**: runs after Phase 5 to prove the winner actually works before marking it done.
 
 ## License
