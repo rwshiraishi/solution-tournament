@@ -1,6 +1,6 @@
 # Full-mode reference — solution-tournament
 
-Read this file when the mode verdict selects FULL, before Phase 1. Lightweight runs never need it. Every rule here has the same authority as SKILL.md prose; where the two disagree, THIS file governs for full-mode machinery and SKILL.md governs for shared rules — and the mismatch is a reported bug.
+Read this file when the mode verdict selects FULL, before Phase 0 (SKILL.md's Calibration owns this timing rule; this line matches it). Lightweight runs never need it. Every rule here has the same authority as SKILL.md prose; where the two disagree, THIS file governs for full-mode machinery and SKILL.md governs for shared rules — and the mismatch is a reported bug.
 
 ## Crossbreed rounds (full mode only — Phase 3 continues here)
 

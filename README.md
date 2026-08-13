@@ -282,7 +282,7 @@ Full mode can send one scorer slot to a non-Anthropic model (`references/full-mo
 
    A completion printed to stdout means you are configured. Exit codes if not: `2` key missing, `3` network/HTTP error (a 404 body naming the model means the key works but the model name is wrong; a 401 means the key is bad), `4` unexpected response shape, `5` usage error (no model named, unreadable packet, bad flag). The skill's fallback rule branches on exactly these codes: any nonzero gets one retry, then the slot falls through to a Claude scorer with the downgrade printed.
 
-4. **Different vendor?** The script is a ~100-line stdlib-only transport hardcoded to OpenAI's chat completions endpoint. Pointing it at another OpenAI-compatible endpoint means editing `API_URL` in `scripts/cross_model_score.py`; a non-compatible vendor needs its own transport with the same exit-code contract (0/2/3/4/5) — that contract, not the vendor, is what the skill depends on.
+4. **Different vendor?** The script is a ~120-line stdlib-only transport hardcoded to OpenAI's chat completions endpoint. Pointing it at another OpenAI-compatible endpoint means editing `API_URL` in `scripts/cross_model_score.py`; a non-compatible vendor needs its own transport with the same exit-code contract (0/2/3/4/5) — that contract, not the vendor, is what the skill depends on.
 
 The CROSS-TIER fallback (a different Claude model for the scorer subagent, in-session) needs no configuration at all — it uses the host's own model override and is labeled in the matrix as same-lineage, partial independence.
 
