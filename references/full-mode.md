@@ -127,3 +127,21 @@ Artifact inventories only — phases hold the rules. Print "checklist: X of Y" p
 | 5 | 7 | 6 | — | route-2 detection command + output |
 
 Y is the phase's TOTAL box count — run-shape-independent (48 across all phases; n/a lines included), with ONE exception: a SOLE-SURVIVOR run never reaches Phase 3 and its Phase 3 line is "2 of 2" (solo sweep line + the 5.0 floor's evidence-floor artifact, per SKILL.md Rule F2). Worked case: a decisive full run, one near-miss, no crossbreed/spike/declined reopen → Y vector 9, 4, 6, 6, 7, 9, 7; Phase 3 fires 3 unconditional boxes plus the evidence floor, sweep line reports the near-miss. Counts to recompute on any box edit, not to trust.
+
+## Cross-model scoring (optional)
+
+The second same-model scorer's known limit is bias channel 5: correlated error passes both scorers with zero spread. This OPTIONAL machinery lets a scorer slot run on a different model. Three tiers, preferred in this order, the choice and its label printed in the matrix header per scorer:
+
+- **CROSS-VENDOR** (real lineage independence): send the IDENTICAL scorer packet — same neutral labels, frozen pack, candidate hashes, `templates/scorer.md` instructions — to a non-Anthropic model via `scripts/cross_model_score.py` (a dumb transport: packet file in, completion out; model named by `--model` or `ST_CROSS_MODEL`; the API key comes from the environment and is NEVER written into the skill, the packet, or the record). Matrix label: "scorer B: <model> (CROSS-VENDOR)".
+- **CROSS-TIER** (same lineage, different checkpoint — partial): spawn the scorer subagent with a different Claude model via the Agent tool's model override. Cheaper and zero-setup; label it honestly — "scorer B: <model> (CROSS-TIER, same lineage)" — because different tiers of one family still share training priors, so this buys cost efficiency and SOME decorrelation, not vendor independence.
+- **SAME-MODEL** (baseline): the existing rule. Label: "(same model)".
+
+Rules:
+- Availability is checked, not assumed: cross-vendor requires the key and a named model; a missing prerequisite falls through to the next tier with the downgrade printed ("cross-model unavailable — independence downgraded to <tier>"). A mid-run failure of the external call (nonzero exit from the transport) gets ONE retry, then the same fallthrough to a Claude scorer. The fallback is never a run-stopper and never silent.
+- An external scorer OCCUPIES the scorer slot it replaces in the 18-call ledger (ticked "external"), so the ceiling arithmetic is unchanged.
+- The return gate applies to an external return EXACTLY as to a subagent return — completeness, responsiveness locators, recompute — and a malformed external return takes the retry-then-fallback path above, not the re-spawn pool.
+- Citation verification and OPINION marking are unchanged: an external scorer citing facts absent from the pack is STRUCK like any other.
+- What it buys, stated plainly: cross-vendor DISAGREEMENT is the most informative signal this file can produce short of a spike — two lineages diverging on a cell means the pack underdetermines it. Cross-vendor AGREEMENT is still weak corroboration, not proof: both models read the same single-authored pack, so pack error (channel 3) passes through both untouched. DISPUTED semantics are unchanged.
+- Packet-integrity caveat, amplified: an external model is even less sandboxed than a subagent (channel 9); the striking rule is still the only mechanical check on it.
+
+**Cost-tier note** (in-session, no external anything): the scorer and skeptic subagents MAY run on a cheaper Claude tier via the same model override — their work is structured rubric application, and a mid-tier model is generally adequate. The RED-TEAM and the Phase 5 implementation reviewer stay on the session's model: the artifacts that can overturn the matrix get the strongest model available. Every model choice prints in the matrix header; a run that downgraded a scorer tier and produced a close pair should say so when the user decides it.
