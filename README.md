@@ -244,7 +244,7 @@ The tournament is a bet that structure beats improvisation for consequential dec
 - **Premortems are speculation.** An imagined failure story is a bias corrector, not a test. Only the spike gate produces evidence, and it applies to a narrow class of problems (spikeable code, close races, full mode).
 - **The disqualification rule depends on naming the symptom correctly.** If the root cause is misdiagnosed in Phase 0, the rule disqualifies the wrong things with full confidence. Rubric approval puts a human check on this, but a user who rubber-stamps inherits the misdiagnosis. Mitigation in the skill: the root-cause claim must cite observable evidence, an unverified diagnosis is labeled HYPOTHESIS at the rubric checkpoint so the user knows what they are approving, and — where an execution tool exists — a VERIFIED removal requires the diagnosis demonstrated in session (the cited command or failing test re-run, verbatim output in the record) before it stands; a citation-only diagnosis caps at HYPOTHESIS, which caps scores instead of removing candidates, so a misdiagnosis fails loudly at Phase 0 instead of propagating with full confidence.
 - **Decision records rot like all documentation.** The compounding benefit assumes future tournaments read them and that they stay true. A stale record that says "approach E was rejected" can block an approach whose blockers have since disappeared. Mitigation in the skill: records are treated as dated claims, and a rejection is only carried forward after verifying its original blocker still exists — each rejection now records its blocker-check command ("this rejection holds while `<command>` still shows X"), so carrying it forward means re-running a command, not judging staleness, and a rejection without a runnable check is a dated claim, never a standing block.
-- **Process can crowd out thinking.** A tournament run mechanically produces the artifacts (matrix, premortems, record) without the judgment they are meant to carry. The format guarantees the boxes are filled, not that filling them was honest. Mitigation in the skill: a final honesty check requires mechanically produced artifacts to be redone or labeled weak in the output. Partial, since a check on honesty is still self-administered.
+- **Process can crowd out thinking.** A tournament run mechanically produces the artifacts (matrix, premortems, record) without the judgment they are meant to carry. The format guarantees the boxes are filled, not that filling them was honest. Mitigation in the skill: a final honesty check requires mechanically produced artifacts to be redone or labeled weak in the output, and `scripts/validate_run.py` now mechanically checks the output's shape and arithmetic (recomputed totals, checklist denominators, sweep name list, mandatory lines) with its verdict pasted into the record. Partial still: the validator certifies shape, not honesty — a check on honesty remains self-administered.
 
 ### The net
 
@@ -258,7 +258,7 @@ Deliberation stays in subagents. Only summaries, the score matrix, and decisions
 
 ## Installation
 
-This skill is **seven files**, not one: `SKILL.md`, two mode references (`references/lightweight-mode.md`, `references/full-mode.md`), three templates, and one optional script. `SKILL.md` references the mode files throughout — lightweight mode reads its reference before Phase 0 and full mode reads its own — so copying only `SKILL.md` gives you a skill whose rules point at files that do not exist.
+This skill is **ten files plus tests**, not one: `SKILL.md`, two mode references (`references/lightweight-mode.md`, `references/full-mode.md`), four templates (three spawn prompts plus the run skeleton), and three scripts (the cross-model transport, a skill-consistency linter, and a run-output validator). `SKILL.md` references the mode files throughout — lightweight mode reads its reference before Phase 0 and full mode reads its own — so copying only `SKILL.md` gives you a skill whose rules point at files that do not exist.
 
 ### Configuring cross-model scoring (optional)
 
@@ -293,11 +293,15 @@ solution-tournament/
 │   ├── lightweight-mode.md   # lightweight adaptations, 15-box inventory, budgets
 │   └── full-mode.md          # crossbreed rules, spike gate, call ceiling, ledgers, worked example
 ├── scripts/
-│   └── cross_model_score.py  # optional: CROSS-VENDOR scorer transport (stdlib-only)
+│   ├── cross_model_score.py  # optional: CROSS-VENDOR scorer transport (stdlib-only)
+│   ├── lint_skill.py         # consistency gate for the skill files themselves (pre-commit)
+│   ├── validate_run.py       # validates a run's output: shape + arithmetic, never truth
+│   └── tests/                # unittest suites for all three scripts
 └── templates/
     ├── scorer.md             # spawn prompts for the full-mode subagents
     ├── skeptic.md
-    └── red-team.md
+    ├── red-team.md
+    └── run-skeleton.md       # fill-in output skeleton both modes use; validate_run parses it
 ```
 
 ### Claude Code
@@ -321,7 +325,7 @@ Invoke it explicitly with `/solution-tournament`, or just describe a problem and
 **Verify the install:**
 
 ```bash
-ls ~/.claude/skills/solution-tournament/{SKILL.md,references/lightweight-mode.md,references/full-mode.md,scripts/cross_model_score.py,templates/}
+ls ~/.claude/skills/solution-tournament/{SKILL.md,references/lightweight-mode.md,references/full-mode.md,scripts/cross_model_score.py,scripts/validate_run.py,templates/}
 ```
 
 ### Claude Code plugin (for teams)
@@ -358,7 +362,7 @@ Pin a specific `version` for stability, and keep the skills list identical acros
 
 ### OpenAI Codex
 
-Codex implements the same standard, so the same seven files work as-is (the cross-model script included, since it is invoked with plain `python3`, not a Claude Code feature — only the CROSS-TIER fallback is Claude Code specific):
+Codex implements the same standard, so the same files work as-is (the cross-model script included, since it is invoked with plain `python3`, not a Claude Code feature — only the CROSS-TIER fallback is Claude Code specific):
 
 ```bash
 # User scope: available everywhere

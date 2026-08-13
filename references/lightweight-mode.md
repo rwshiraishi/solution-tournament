@@ -1,6 +1,6 @@
 # Lightweight mode — solution-tournament
 
-Read this file when the mode verdict selects LIGHTWEIGHT, before Phase 0. A lightweight run loads SKILL.md plus this file and NOTHING else — never `full-mode.md`, never `templates/`. SKILL.md governs shared rules; this file governs lightweight adaptations; a disagreement between them is a reported bug.
+Read this file when the mode verdict selects LIGHTWEIGHT, before Phase 0. A lightweight run loads SKILL.md plus this file, and fills `templates/run-skeleton.md` at output time — never `full-mode.md`, never the spawn templates (scorer/skeptic/red-team). SKILL.md governs shared rules; this file governs lightweight adaptations; a disagreement between them is a reported bug.
 
 ## What lightweight is
 
@@ -61,7 +61,7 @@ Every box prints in EVERY run; a conditional sub-part that does not apply prints
 11. self-red-team report + FATAL re-check results
 11a. severity-gate determination (rung + likelihood + outcome) — the fifteenth box, numbered to keep neighbors stable
 12. terminal decision + decisive confirmation (user present) + this run shape's disclosure line
-13. tests with verbatim output + implementation self-review (labeled SELF-ADMINISTERED) + decision record + index line
+13. tests with verbatim output + validate_run verdict (or "validator: NOT RUN — no execution tool") + implementation self-review (labeled SELF-ADMINISTERED) + decision record + index line
 14. COUNTERS ledger final line, covering the counters that EXIST in lightweight: reopen (1) · re-entry (1) · re-scores (2) · post-freeze mutation (1) · scoring rounds (fixed, printed "1 of 1"); the subagent-only counters (completeness slots, fact requests, read-only verifications, red-team calls, spike attempts, reserved abbreviated-skeptic slot) print once as "n/a (no subagents)". Instantiate the ledger at Phase 0 as one fixed template line with every counter pre-listed at zero, updated IN PLACE at every spend.
 
 Lightweight keeps ONE ledger (COUNTERS) and NO GATE-ORDER ledger — that ledger audits multi-agent interleaving, and a mode with no subagents has none. Lightweight's ordered-execution check is box 8's arithmetic print plus this fixed 15-box skeleton; its strike sources are the @late tag, a box count below 15, and an absent line.

@@ -87,7 +87,17 @@ class TestRegressions(FixtureCase):
         self.assertTrue(any("red-team" in f for f in findings), findings)
 
     def test_detects_size_claim_drift(self) -> None:
-        self.mutate("SKILL.md", "~9.8k words / 63k chars", "~4.0k words / 20k chars")
+        import re
+        p = self.root / "SKILL.md"
+        text = p.read_text()
+        mutated = re.sub(
+            r"this file \(~[\d.]+k words / [\d.]+k chars\)",
+            "this file (~4.0k words / 20k chars)",
+            text,
+            count=1,
+        )
+        self.assertNotEqual(text, mutated, "size-claim pattern not found to mutate")
+        p.write_text(mutated)
         findings = run_lint(self.root, self.readme)
         self.assertTrue(any("size claim" in f.lower() for f in findings), findings)
 
