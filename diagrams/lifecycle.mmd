@@ -1,0 +1,28 @@
+flowchart TD
+    Start([Mode selection]) --> P0["Phase 0: Rubric lock"]
+    P0 --> P1["Phase 1: Divergent generation"]
+    P1 --> P1_5["Phase 1.5: Skeptic pass"]
+    P1_5 --> P2["Phase 2: Blind scoring"]
+    P2 --> P3{Phase 3: Decision gate}
+    P3 -->|Margin > 10%| P4["Phase 4: Red-team"]
+    P3 -->|Margin ≤ 10%| Crossbreed["Crossbreed round"]
+    Crossbreed --> P2
+    P4 -->|Fatal flaw?| RunnerUp["Red-team runner-up"]
+    RunnerUp --> Choose{User decides}
+    Choose -->|Pick winner| P5
+    Choose -->|Pick runner-up| P5
+    P4 -->|No fatal flaw| P5["Phase 5: Implement & record"]
+    P5 --> End([Complete])
+
+    style Start fill:#ffd700
+    style P0 fill:#e6f3ff
+    style P1 fill:#e6f3ff
+    style P1_5 fill:#e6f3ff
+    style P2 fill:#e6f3ff
+    style P3 fill:#ffe6e6
+    style P4 fill:#e6f3ff
+    style P5 fill:#e6f3ff
+    style Crossbreed fill:#fff4e6
+    style RunnerUp fill:#fff4e6
+    style Choose fill:#ffd700
+    style End fill:#e6ffe6
